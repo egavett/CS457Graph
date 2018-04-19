@@ -1,8 +1,7 @@
 # Salesman.py
 # Main Function - manages control flow
-import Display
-import GeneticAlgoritmManager
-import Graph
+import GeneticAlgoritmManager import Manager
+from Graph import Graph
 
 def importGraph(fileName):
     # Imports the graph information from a textfile and stores it in a Graph object
@@ -14,10 +13,13 @@ def importGraph(fileName):
     linesin.pop(0)
     edges = [(int(edge[0]), int(edge[1]), int(edge[2])) for edge in linesin]
 
-    newGraph = graph.Graph(vertexCount, edges)
+    newGraph = Graph(vertexCount, edges)
 
     return newGraph
 
+# import graph data and create the Genetic Algorithm manager
 citiesGraph = importGraph('salesman.txt')
-manager = GeneticAlgoritmManager.Manager(citiesGraph)
+manager = Manager(citiesGraph)
 
+for case in range(manager.crossoverCount):
+    manager.runAlgorithm(case)

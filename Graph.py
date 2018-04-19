@@ -1,5 +1,5 @@
 # graph.py
-# Graph Class Implementation
+# Weighted, Undirected Graph Class Implementation
 class Graph:
     def __init__(self, vertices, edges):
         self.verticies = [ v for v in range (1, verticies +1) ]
