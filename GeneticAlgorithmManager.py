@@ -13,9 +13,9 @@ class Solution:
 
 class Manager:
     firstGenerationSize = 50    # the size of the first generation of solutions
-    crossoverCount = 1          # the number of crossover functions the manager has implemented
+    crossoverCount = 3          # the number of crossover functions the manager has implemented
 
-    ## Initialization Functions
+    ## Initialization Functions ##
     def __init__(self, graph):
         self.graph = graph
         self.firstGeneration = generateSolutions(firstGenerationSize)
@@ -31,7 +31,7 @@ class Manager:
         return generated
 
 
-    ## Evalutation and Mutation functions
+    ## Evalutation and Mutation functions ##
     def getCost():
         # return the cost of following the given path
         cost = 0
@@ -62,9 +62,6 @@ class Manager:
         for solution in self.currentGeneration:
             solution = attemptMutation(solution)
 
-    def foo(solutions):
-        # temp function for testing 
-        return 1
 
     ## Crossover Functions ##    
     def orderedCrossover(solutions):
@@ -81,20 +78,27 @@ class Manager:
             maintainedX, maintainedY = parentX[start:end], parentY[start:end]   # Grab the values to be maintained from the arrays
             solutionA, solutionB = [], []
             
+            j = 0
             for i in range(0, start):
                 if parentY[i] not in maintainedX:
-                    solutionA.append(parentY[i])
+                    solutionA.append(parentY[j])
+                    j += 1
                 if parentX[i] not in maintainedY:
-                    solutionB.append(parentX[i])
+                    solutionB.append(parentX[j])
+                    j += 1
             
             solutionA.extend(maintainedX)
             solutionB.extend(maintainedY)
 
+            j = end
             for i in range(end, len(parentX)):
                 if parentY[i] not in maintainedX:
-                    solutionA.append(parentY[i])
+                    solutionA.append(parentY[j])
+                    j += 1
                 if parentX[i] not in maintainedY:
-                    solutionB.append(parentX[i])
+                    solutionB.append(parentX[j])
+                    j +=1
+
             generation.append(solutionA)
             generation.append(solutionB)
         return generation
