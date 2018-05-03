@@ -21,9 +21,10 @@ def importGraph(fileName):
     newGraph = Graph(vertexCount, weights)
     return newGraph
 
-# import graph data and create the Genetic Algorithm manager
+# Import graph data and create the Genetic Algorithm manager
 citiesGraph = importGraph('salesman1.txt')
 manager = Manager(citiesGraph)
 
+# Run the genetic algorithm for each supported crossover function
 for case in range(manager.crossoverCount):
     manager.runAlgorithm(case)

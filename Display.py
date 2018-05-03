@@ -5,6 +5,7 @@ from GeneticAlgorithmManager import Solution
 import sys
 from termcolor import colored
 
+# TODO: Replace with GUI
 def displayPath(graph, solution):
     vertexCount = len(solution.path)
     highlight = [False for x in range(vertexCount)] for y in range(vertexCount)]    # 2D-array of booleans, signifies which edges are in the path
@@ -12,7 +13,6 @@ def displayPath(graph, solution):
     for i in range(len(solution.path)):
         v1, v2 = solution.path[i], solution.path[i+1]   # get the vertices of the given indices - final i+1 will return index 0
         highlight[v1][v2] = True                        # Mark the edge as being on the path
-
 
     # Print the graph, highlighting the edges that are in the path
     for x in graph.weights:

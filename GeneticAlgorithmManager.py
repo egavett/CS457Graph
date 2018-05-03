@@ -15,6 +15,11 @@ class Solution:
 class Manager:
     firstGenerationSize = 50    # the size of the first generation of solutions
     crossoverCount = 3          # the number of crossover functions the manager has implemented
+    crossoverNames = {          # For Display purposes: the names of implemented crossover functions
+            0 : "Ordered Crossover",
+            1 : "Partially Mapped Crossover",
+            2 : "Cycle Crossover"
+    }
 
     ## Initialization Functions ##
     def __init__(self, graph):
@@ -79,26 +84,27 @@ class Manager:
             maintainedX, maintainedY = parentX[start:end], parentY[start:end]   # Grab the values to be maintained from the arrays
             solutionA, solutionB = [], []
             
-            j = 0
+            j, k = 0
             for i in range(0, start):
                 if parentY[i] not in maintainedX:
                     solutionA.append(parentY[j])
                     j += 1
                 if parentX[i] not in maintainedY:
-                    solutionB.append(parentX[j])
-                    j += 1
+                    solutionB.append(parentX[k])
+                    k += 1
             
             solutionA.extend(maintainedX)
             solutionB.extend(maintainedY)
 
             j = end
+            k = end
             for i in range(end, len(parentX)):
                 if parentY[i] not in maintainedX:
                     solutionA.append(parentY[j])
                     j += 1
                 if parentX[i] not in maintainedY:
-                    solutionB.append(parentX[j])
-                    j +=1
+                    solutionB.append(parentX[k])
+                    k +=1
 
             generation.append(solutionA)
             generation.append(solutionB)
@@ -167,8 +173,8 @@ class Manager:
     def crossoverSwitch(case, solutions):
         # A switch statement workaround that executes and returns the result of the chosen crossover 
         return {
-            0 : orderedCrossover(solutions)
-            1 : partiallyMappedCrossover(solutions)
+            0 : orderedCrossover(solutions),
+            1 : partiallyMappedCrossover(solutions),
             2 : cycleCrossover(solutions)
         }[case]
     
