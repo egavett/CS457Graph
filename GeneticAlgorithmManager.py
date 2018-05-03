@@ -4,6 +4,7 @@ from Graph import Graph
 import random
 import operator
 import collections
+import Display
 
 # Helper class for storing solution information
 class Solution:
@@ -176,9 +177,12 @@ class Manager:
     def runAlgorithm(case):
         maxGeneration = 100 # the number of generations the algorithm will run for
         self.currentGeneration = list(self.firstGeneration)
-        for _ in range(maxGeneration):
+        for i in range(maxGeneration):
             evaluateCurrentGeneration()
-            # TODO: display current best in generation
+
+            # Display current best in generation
+            print("Current Generation: " + i)
+            Display.displayPath(self.graph, self.currentGeneration[0])
 
             # Execute Crossover on best solutions
             newGeneration = self.currentGeneration[:len(self.currentGeneration)/2]   # keep the top 50% of the generation
@@ -188,4 +192,6 @@ class Manager:
             # attempt mutation on each solution
             mutateGeneration()            
 
-        # TODO: display best solution
+        # Display current best in generation
+        print("Final Output")
+        Display.displayPath(self.graph, self.currentGeneration[0])
