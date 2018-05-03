@@ -5,8 +5,8 @@ import random
 import operator
 import collections
 
+# Helper class for storing solution information
 class Solution:
-    # Helper class for storing solution information
     def __init__(self, path):
         self.path = path
         self.cost = -1  # set cost to -1 until the solution is evaluated
@@ -18,37 +18,37 @@ class Manager:
     ## Initialization Functions ##
     def __init__(self, graph):
         self.graph = graph
-        self.firstGeneration = generateSolutions(firstGenerationSize)
+        self.firstGeneration = generateSolutions(firstGenerationSize)   # Create and store the inital sample of solutions; start each iteration with the same data set
         self.currentGeneration = []
 
     def generateSolutions(firstGenerationSize):
         # Create and return the first generation of solutions
         generated = []
         for _ in range(firstGenerationSize):
-            path = list(graph.vertices)
-            random.shuffle(path)
-            generated.append(Solution(path))
+            path = list(graph.vertices)         # Create a copy of the vertex list
+            random.shuffle(path)                # Shuffle the vertex list: creating a random path through the graph
+            generated.append(Solution(path))    # Append to the initial solution set
         return generated
 
 
     ## Evalutation and Mutation functions ##
+    # Return the cost of following the given path
     def getCost():
-        # return the cost of following the given path
         cost = 0
         for i in range(len(solution.path)):
             v1, v2 = solution.path[i], solution.path[i+1]   # get the vertices of the given indices - final i+1 will return index 0
-            cost += graph.weights[(v1, v2)]                 # retrive the weight of the edge - add to cost
+            cost += graph.weight[v1][v2]                    # retrive the weight of the edge - add to cost
         return cost
     
+    # Gets the cost for each solution in the generation, then sorts the solutions by cost, ascending
     def evaluateGeneration():
-        # Gets the cost for each solution in the generation, then sorts the solutions by cost, ascending
         for solution in self.currentGeneration:
             solution.cost = getCost(solution.path)
         self.currentGeneration.sort(key = operator.attrgetter('cost'))
 
-    def attemptMutation(solution):
-        # Based on a small probability, mutate the solution by swapping the values two random indices
-        # Swapping values guarantees the validity of the random solution
+    # Based on a small probability, mutate the solution by swapping the values two random indices
+    # Swapping values guarantees the validity of the random solution
+    def attemptMutation(solution):   
         chance = 0.0001
         if random.random() < change:
             i, j = random.randrange(len(solution))
@@ -57,8 +57,8 @@ class Manager:
         solution[j] = temp
         return solution
 
+    # Calls attemptMutation on each solution in the generation
     def mutateGeneration()
-        # calls attemptMutation on each solution in the generation
         for solution in self.currentGeneration:
             solution = attemptMutation(solution)
 
@@ -172,8 +172,8 @@ class Manager:
         }[case]
     
     ## 'Main' Function ##
+    # Runs the genetic algorthm using a chosen crossover function
     def runAlgorithm(case):
-        # Runs the genetic algorthm using a chosen crossover function
         maxGeneration = 100 # the number of generations the algorithm will run for
         self.currentGeneration = list(self.firstGeneration)
         for _ in range(maxGeneration):
