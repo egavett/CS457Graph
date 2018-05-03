@@ -27,8 +27,8 @@ class Manager:
         self.firstGeneration = generateSolutions(firstGenerationSize)   # Create and store the inital sample of solutions; start each iteration with the same data set
         self.currentGeneration = []
 
+    # Create and return the first generation of solutions
     def generateSolutions(firstGenerationSize):
-        # Create and return the first generation of solutions
         generated = []
         for _ in range(firstGenerationSize):
             path = list(graph.vertices)         # Create a copy of the vertex list
@@ -69,7 +69,7 @@ class Manager:
             solution = attemptMutation(solution)
 
 
-    ## Crossover Functions ##    
+    ## Crossover Functions ##  
     def orderedCrossover(solutions):
         generation = []
         for x, y in range(0, len(solutions), 2):
@@ -83,31 +83,32 @@ class Manager:
 
             maintainedX, maintainedY = parentX[start:end], parentY[start:end]   # Grab the values to be maintained from the arrays
             solutionA, solutionB = [], []
-            
-            j, k = 0
-            for i in range(0, start):
-                if parentY[i] not in maintainedX:
-                    solutionA.append(parentY[j])
-                    j += 1
-                if parentX[i] not in maintainedY:
-                    solutionB.append(parentX[k])
-                    k += 1
-            
-            solutionA.extend(maintainedX)
-            solutionB.extend(maintainedY)
 
-            j = end
-            k = end
-            for i in range(end, len(parentX)):
-                if parentY[i] not in maintainedX:
-                    solutionA.append(parentY[j])
-                    j += 1
-                if parentX[i] not in maintainedY:
-                    solutionB.append(parentX[k])
-                    k +=1
+            i, j = 0
+            while j < len(parentX):
+                if i == start:
+                    solutionA.extend(maintainedX)
+                    j += len(maintainedX)
+                    i += len(maintainedX)
+                else:
+                    if parentY[i] not in maintainedX:
+                        solutionA.append(parentY[j])
+                        j += 1
+                    i += 1
+            
+            i, j = 0
+            while j < len(parentY):
+                if i == start:
+                    solutionB.extend(maintainedY)
+                    j += len(maintainedY)
+                    i += len(maintainedY)
+                else:
+                    if parentX[i] not in maintainedY:
+                        solutionB.append(parentX[j])
+                        j += 1
+                    i += 1
 
-            generation.append(solutionA)
-            generation.append(solutionB)
+            generation.extend([solutionA, solutionB])
         return generation
 
     def partiallyMappedCrossover(solutions):
@@ -181,6 +182,7 @@ class Manager:
     ## 'Main' Function ##
     # Runs the genetic algorthm using a chosen crossover function
     def runAlgorithm(case):
+        print("Testing Crossover Function: " + crossoverNames[case])
         maxGeneration = 100 # the number of generations the algorithm will run for
         self.currentGeneration = list(self.firstGeneration)
         for i in range(maxGeneration):
