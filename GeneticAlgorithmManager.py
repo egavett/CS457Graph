@@ -1,10 +1,11 @@
 # GeneticAlgorithm.py
 # Maintains all functions for performing the genetic algorithm
 from Graph import Graph
+import Display
+
 import random
 import operator
 import collections
-import Display
 
 # Helper class for storing solution information
 class Solution:
@@ -13,13 +14,13 @@ class Solution:
         self.cost = -1  # set cost to -1 until the solution is evaluated
 
 class Manager:
-    firstGenerationSize = 50    # the size of the first generation of solutions
-    crossoverCount = 3          # the number of crossover functions the manager has implemented
-    crossoverNames = {          # For Display purposes: the names of implemented crossover functions
+    firstGenerationSize = 50                        # the size of the first generation of solutions
+    crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
             0 : "Ordered Crossover",
             1 : "Partially Mapped Crossover",
             2 : "Cycle Crossover"
     }
+    crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
 
     ## Initialization Functions ##
     def __init__(self, graph):
@@ -86,19 +87,21 @@ class Manager:
 
             i, j = 0
             while j < len(parentX):
-                if i == start:
+                if j == start:
                     solutionA.extend(maintainedX)
                     j += len(maintainedX)
-                    i += len(maintainedX)
                 else:
                     if parentY[i] not in maintainedX:
                         solutionA.append(parentY[j])
                         j += 1
-                    i += 1
+                    if i == start:
+                        i += len(maintainedX)
+                    else:
+                        i += 1
             
             i, j = 0
             while j < len(parentY):
-                if i == start:
+                if j == start:
                     solutionB.extend(maintainedY)
                     j += len(maintainedY)
                     i += len(maintainedY)
@@ -106,7 +109,10 @@ class Manager:
                     if parentX[i] not in maintainedY:
                         solutionB.append(parentX[j])
                         j += 1
-                    i += 1
+                    if i == start:
+                        i += len(maintainedY)
+                    else:
+                        i += 1
 
             generation.extend([solutionA, solutionB])
         return generation
@@ -121,39 +127,49 @@ class Manager:
                 temp = start
                 start = end
                 end = temp
-            
-            maintainedX, maintainedY = parentX[start:end], parentY[start:end]   # Grab the values to be maintained from the arrays
 
-            crosssection = collections.defaultdict(int)
+            # Grab the values to be maintained from the arrays
+            maintainedX, maintainedY = parentX[start:end], parentY[start:end]  
+
+            # Create two dictionaries to map the values in maintained to each other
+            crosssectionX = collections.defaultdict(int) 
+            crosssectionY = collections.defaultdict(int)
             for i in range(len(maintainedX)):
-                crosssection[maintainedX[i]] = maintainedY[i]
-                crosssection[maintainedY[i]] = maintainedX[i]
+                crosssectionX[maintainedX[i]] = maintainedY[i]
+                crosssectionY[maintainedY[i]] = maintainedX[i]
 
             solutionA, solutionB = [], []
 
+            # While the value in the parent is in the crosssection, get the mapped value
+            # Then, append the initial or resulting value to the child solution
             for i in range(0, start):
-                if parentY[i] in crosssection.keys:
-                    solutionA.append(crosssection[partyY[i]])
-                else
-                    solutionA.append(parentY[i])
-                if parentX[i] in crosssection.keys:
-                    solutionA.append(crosssection[partyX[i]])
-                else
-                    solutionA.append(parentX[i])
+                nextValueA = parentY[i]
+                while nextValueA in crosssectionX.keys:
+                    nextValueA = crosssectionX[nextValueA]
+                solutionA.append[nextValueA]
 
+                nextValueB = parentX[i]
+                while nextValueB in crosssectionY.keys:
+                    nextValueB = crosssectionY[nextValueB]
+                solutionB.append[nextValueB]
+
+            # Append the maintained subarrays to the opposite child solution
             solutionA.extend(maintainedX)
             solutionB.extend(maintainedY)
 
+            # Repeat the previous step for the end of the array
             for i in range(end, len(parentX)):
-                if parentY[i] in crosssection.keys:
-                    solutionA.append(crosssection[partyY[i]])
-                else
-                    solutionA.append(parentY[i])
-                if parentX[i] in crosssection.keys:
-                    solutionA.append(crosssection[partyX[i]])
-                else
-                    solutionA.append(parentX[i])
+                nextValueA = parentY[i]
+                while nextValueA in crosssectionX.keys:
+                    nextValueA = crosssectionX[nextValueA]
+                solutionA.append[nextValueA]
+
+                nextValueB = parentX[i]
+                while nextValueB in crosssectionY.keys:
+                    nextValueB = crosssectionY[nextValueB]
+                solutionB.append[nextValueB]
             
+            # Append the children to the next generation
             generation.append(solutionA)
             generation.append(solutionB)
         return generation
