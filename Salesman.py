@@ -1,6 +1,6 @@
 # Salesman.py
 # Main Function - manages control flow
-import GeneticAlgoritmManager import Manager
+from GeneticAlgorithmManager import Manager
 from Graph import Graph
 
 # Imports the graph information from a textfile and stores it in a Graph object
@@ -14,8 +14,8 @@ def importGraph(fileName):
     weights = [ sublist.strip().split() for sublist in data.splitlines() ]
 
     # Get the number of vertices in the graph
-    vertexCount = int(linesin[0][0])
-    linesin.pop(0)
+    vertexCount = int(weights[0][0])
+    weights.pop(0)
 
     # Create and return a graph object
     newGraph = Graph(vertexCount, weights)
