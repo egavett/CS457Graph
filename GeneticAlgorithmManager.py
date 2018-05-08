@@ -3,28 +3,37 @@
 from Graph import Graph
 import Display
 
+import time
+import os
 import random
 import operator
 import collections
 
 # Helper class for storing solution information
 class Solution:
+    # Initializer
     def __init__(self, path):
         self.path = path
         self.cost = -1  # set cost to -1 until the solution is evaluated
+        
+    # Debug: for printing
+    def __repr__(self):
+        return "The path: {" + " ".join(str(e) for e in self.path) + "} costs: " + str(self.cost)
+    def __str__(self):
+        return "The path: {" + " ".join(str(e) for e in self.path) + "} costs: " + str(self.cost)
+        
 
 class Manager:
     firstGenerationSize = 50                        # the size of the first generation of solutions
     crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
-            0 : "Ordered Crossover",
-            1 : "Partially Mapped Crossover"
+            1 : "Ordered Crossover",
+            0 : "Partially Mapped Crossover"
             #2 : "Cycle Crossover"
     }
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
 
     ## Initialization Functions ##
     # Create and return the first generation of solutions
-  #@staticmethod
     def generateSolutions(self, firstGenerationSize):
         generated = []
         for _ in range(firstGenerationSize):
@@ -38,10 +47,12 @@ class Manager:
         self.graph = graph
         self.firstGeneration = self.generateSolutions(self.firstGenerationSize)   # Create and store the inital sample of solutions; start each iteration with the same data set
         self.currentGeneration = []
+        self.bestSolution = self.firstGeneration[0]     # Save the current best generation to determine when to exit
 
     ## Evalutation and Mutation functions ##
     # Return the cost of following the given path
     def getCost(self, path):
+        path = list(path)
         cost = 0
         for i in range(len(path)):
             j = i+1
@@ -54,33 +65,39 @@ class Manager:
     # Gets the cost for each solution in the generation, then sorts the solutions by cost, ascending
     def evaluateCurrentGeneration(self):
         for solution in self.currentGeneration:
-            solution.cost = self.getCost(solution.path)
+            if solution.cost == -1:     # No need to reevaluate a solution
+                solution.cost = self.getCost(solution.path)
         self.currentGeneration.sort(key = operator.attrgetter('cost'))
 
     # Based on a small probability, mutate the solution by swapping the values two random indices
     # Swapping values guarantees the validity of the random solution
-    def attemptMutation(self,solution):   
+    def attemptMutation(self, solution):   
         chance = 0.0001
-        if random.random() < change:
-            i, j = random.randrange(len(solution))
-        temp = solution[i]
-        solution[i] = solution[j]
-        solution[j] = temp
+        if random.random() < chance:
+
+            i, j = random.randrange(len(solution.path)), random.randrange(len(solution.path))
+            temp = solution.path[i]
+            solution.path[i] = solution.path[j]
+            solution.path[j] = temp
         return solution
 
     # Calls attemptMutation on each solution in the generation
     def mutateGeneration(self):
         for solution in self.currentGeneration:
-            solution = attemptMutation(solution)
+            solution = self.attemptMutation(solution)
 
 
     ## Crossover Functions ##  
     def orderedCrossover(self, solutions):
         generation = []
-        for x in range(0, len(solutions), 2):
+        for x in range(0, len(solutions)-1, 2):
             y = x+1
+
             parentX, parentY = solutions[x], solutions[y]   # Get the next set of parents
-            start, end = random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
+            
+            start, end = 0, 0
+            while start == end:
+                start, end =  random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
 
             if start > end: # Ensure that start <= end
                 temp = start
@@ -91,43 +108,51 @@ class Manager:
             solutionA, solutionB = [], []
 
             i, j = 0, 0
-            while j < len(parentX.path):
+            while j < len(parentX.path) and i < len(parentX.path):
+                #print("Looping child 1...")
+                #print("Parent length: " + str(len(parentX.path)))
+                #print("i index: " + str(i))
+                #print("j index: " + str(j))
                 if j == start:
                     solutionA.extend(maintainedX)
                     j += len(maintainedX)
-                else:
-                    if parentY.path[i] not in maintainedX:
-                        solutionA.append(parentY.path[j])
-                        j += 1
-                    if i == start:
-                        i += len(maintainedX)
-                    else:
-                        i += 1
+
+                if parentY.path[i] not in maintainedX:
+                    solutionA.append(parentY.path[i])
+                    j += 1
+                
+                i += 1
             
-            i, j = 0
-            while j < len(parentY.path):
+            i, j = 0, 0
+            while j < len(parentY.path) and i < len(parentY.path):
+                #print("Looping child 2...")
+                #print("Parent length: " + str(len(parentY.path)))
+                #print("i index: " + str(i))
+                #print("j index: " + str(j))
                 if j == start:
                     solutionB.extend(maintainedY)
                     j += len(maintainedY)
-                    i += len(maintainedY)
-                else:
-                    if parentX.path[i] not in maintainedY:
-                        solutionB.append(parentX.path[j])
-                        j += 1
-                    if i == start:
-                        i += len(maintainedY)
-                    else:
-                        i += 1
+                
+                if parentX.path[i] not in maintainedY:
+                    solutionB.append(parentX.path[i])
+                    j += 1
+                
+                i += 1
 
-            generation.extend([solutionA, solutionB])
+            # Append the children to the next generation
+            generation.extend([Solution(solutionA), Solution(solutionB)])
+        print("Crossover finished.")
         return generation
 
     def partiallyMappedCrossover(self, solutions):
         generation = []
-        for x in range(0, len(solutions), 2):
+        for x in range(0, len(solutions)-1, 2):
             y = x+1
             parentX, parentY = solutions[x], solutions[y]   # Get the next set of parents
-            start, end = random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
+
+            start, end = 0, 0
+            while start == end:
+                start, end =  random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
 
             if start > end: # Ensure that start <= end
                 temp = start
@@ -150,14 +175,14 @@ class Manager:
             # Then, append the initial or resulting value to the child solution
             for i in range(0, start):
                 nextValueA = parentY.path[i]
-                while nextValueA in crosssectionX.keys:
+                while nextValueA in crosssectionX:
                     nextValueA = crosssectionX[nextValueA]
-                solutionA.append[nextValueA]
+                solutionA.append(nextValueA)
 
                 nextValueB = parentX.path[i]
-                while nextValueB in crosssectionY.keys:
+                while nextValueB in crosssectionY:
                     nextValueB = crosssectionY[nextValueB]
-                solutionB.append[nextValueB]
+                solutionB.append(nextValueB)
 
             # Append the maintained subarrays to the opposite child solution
             solutionA.extend(maintainedX)
@@ -166,18 +191,17 @@ class Manager:
             # Repeat the previous step for the end of the array
             for i in range(end, len(parentX.path)):
                 nextValueA = parentY.path[i]
-                while nextValueA in crosssectionX.keys:
+                while nextValueA in crosssectionX:
                     nextValueA = crosssectionX[nextValueA]
-                solutionA.append[nextValueA]
+                solutionA.append(nextValueA)
 
                 nextValueB = parentX.path[i]
-                while nextValueB in crosssectionY.keys:
+                while nextValueB in crosssectionY:
                     nextValueB = crosssectionY[nextValueB]
-                solutionB.append[nextValueB]
+                solutionB.append(nextValueB)
             
             # Append the children to the next generation
-            generation.append(solutionA)
-            generation.append(solutionB)
+            generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
     def cycleCrossover(self, solutions):
@@ -190,28 +214,49 @@ class Manager:
 
             
 
-            generation.append(solutionA)
-            generation.append(solutionB)
+            # Append the children to the next generation
+            generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
     def crossoverSwitch(self, case, solutions):
-        # A switch statement workaround that executes and returns the result of the chosen crossover 
-        return {
-            0 : self.orderedCrossover(solutions),
-            1 : self.partiallyMappedCrossover(solutions),
-            2 : self.cycleCrossover(solutions)
-        }[case]
+        # Selects the correct crossover function based on case
+        if case == 0:
+            return self.orderedCrossover(solutions)
+        elif case == 1:
+            return self.partiallyMappedCrossover(solutions)
+        else:
+            return self.cycleCrossover(solutions)
     
     ## 'Main' Function ##
     # Runs the genetic algorthm using a chosen crossover function
-    def runAlgorithm(self,case):
-        print("Testing Crossover Function: " + self.crossoverNames[case])
-        maxGeneration = 100 # the number of generations the algorithm will run for
+    def runAlgorithm(self, case):
+        # Helper variables. If the best solution doesn't change for a certain number of generations, then exit
+        maxStaleness = 10   
+        stalenessCount = 0
+        i = 0
+
+        # Reset the current generation to the intially generated first generation
         self.currentGeneration = list(self.firstGeneration)
-        for i in range(maxGeneration):
+        self.bestSolution = self.currentGeneration[0]     # Save the current best generation to determine when to exit
+
+        while stalenessCount < maxStaleness:            
+            # Clear the terminal
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("Testing Crossover Function: " + self.crossoverNames[case])
+
+            # Get the cost for each solution in the generation
             self.evaluateCurrentGeneration()
 
+            # Evaluate for staleness
+            if self.bestSolution.path == self.currentGeneration[0].path:
+                stalenessCount += 1
+            else:
+                # New solution: update helpers
+                stalenessCount = 0
+                self.bestSolution = self.currentGeneration[0]
+
             # Display current best in generation
+            i += 0
             print("Current Generation: " + str(i))
             Display.displayPath(self.graph, self.currentGeneration[0])
 
@@ -221,8 +266,9 @@ class Manager:
             self.currentGeneration = newGeneration
 
             # attempt mutation on each solution
-            self.mutateGeneration()            
+            self.mutateGeneration()
 
-        # Display current best in generation
-        print("Final Output")
-        Display.displayPath(self.graph, self.currentGeneration[0])
+            print("Staleness: " + str(stalenessCount))
+
+            # Wait 1/4 second before repeating
+            time.sleep(0.25)      

@@ -6,5 +6,5 @@ class Graph:
         self.weights = [[-1 for x in range(verticies)] for y in range(verticies)]  # Weighted Adjacency matrix; default weight of -1 for unconnected vertices
 
         for row in range(len(weights)):
-            for column in range(row):
+            for column in range(len(weights)):
                 self.weights[row][column] = int(weights[row][column])

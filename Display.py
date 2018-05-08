@@ -4,10 +4,11 @@ import Graph
 import GeneticAlgorithmManager
 
 import sys
-#from termcolor import colored
+from termcolor import colored
 
 # TODO: Replace with GUI
 def displayPath(graph, solution):
+    print(solution)
     vertexCount = len(solution.path)
     highlight = [[False for x in range(vertexCount)] for y in range(vertexCount)]    # 2D-array of booleans, signifies which edges are in the path
 
@@ -21,16 +22,13 @@ def displayPath(graph, solution):
     # Print the graph, highlighting the edges that are in the path
     for row in range(len(graph.weights)):
         sys.stdout.write('| ')
-        for column in range(row):
+        for column in range(len(graph.weights)):
         # If the edge is in the path, print green; otherwise print normally
+            text = str(graph.weights[row][column])
             if highlight[row][column]:
-                #text = colored(graph.weights[x][y], green)
-                #print(text)
-                sys.stdout.write(str(graph.weights[row][column]))
-                sys.stdout.write(" ")
-            else:
-                sys.stdout.write(str(graph.weights[row][column]))
-                sys.stdout.write(" ")
+                text = colored(graph.weights[row][column], 'green')
+            sys.stdout.write(text)
+            sys.stdout.write(" ")
         sys.stdout.write('| ')
         print("")
     # Print the cost of the solutions
