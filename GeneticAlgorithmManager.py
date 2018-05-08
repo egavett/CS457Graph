@@ -256,7 +256,7 @@ class Manager:
                 self.bestSolution = self.currentGeneration[0]
 
             # Display current best in generation
-            i += 0
+            i += 1
             print("Current Generation: " + str(i))
             Display.displayPath(self.graph, self.currentGeneration[0])
 
