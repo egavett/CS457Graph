@@ -26,8 +26,8 @@ class Solution:
 class Manager:
     firstGenerationSize = 64                        # the size of the first generation of solutions
     crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
-            1 : "Ordered Crossover",
-            0 : "Partially Mapped Crossover"
+            0 : "Ordered Crossover",
+            1 : "Partially Mapped Crossover"
             #2 : "Cycle Crossover"
     }
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
@@ -223,7 +223,7 @@ class Manager:
     # Runs the genetic algorthm using a chosen crossover function
     def runAlgorithm(self, case):
         # Helper variables. If the best solution doesn't change for a certain number of generations, then exit
-        maxStaleness = 10   
+        maxStaleness = 20   
         stalenessCount = 0
         i = 0
 

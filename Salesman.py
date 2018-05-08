@@ -23,8 +23,11 @@ def importGraph(fileName):
 
 
 # Import graph data and create the Genetic Algorithm manager
-citiesGraph = importGraph('salesman1.txt')
+citiesGraph = importGraph('salesman2.txt')
 manager = Manager(citiesGraph)
+
+# Double check that the graph is valid: (x,y) == (y,x)
+citiesGraph.checkValidity()
 
 # Run the genetic algorithm for each supported crossover function
 for case in range(manager.crossoverCount):
