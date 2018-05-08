@@ -24,7 +24,7 @@ class Solution:
         
 
 class Manager:
-    firstGenerationSize = 50                        # the size of the first generation of solutions
+    firstGenerationSize = 64                        # the size of the first generation of solutions
     crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
             1 : "Ordered Crossover",
             0 : "Partially Mapped Crossover"
@@ -90,118 +90,110 @@ class Manager:
     ## Crossover Functions ##  
     def orderedCrossover(self, solutions):
         generation = []
-        for x in range(0, len(solutions)-1, 2):
+        for x in range(0, len(solutions), 2):
             y = x+1
-
             parentX, parentY = solutions[x], solutions[y]   # Get the next set of parents
             
-            start, end = 0, 0
-            while start == end:
-                start, end =  random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
+            # Execute twice to create 4 children
+            for _ in range(2):
+                start, end = 0, 0
+                while start == end:
+                    start, end =  random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
 
-            if start > end: # Ensure that start <= end
-                temp = start
-                start = end
-                end = temp
+                if start > end: # Ensure that start <= end
+                    temp = start
+                    start = end
+                    end = temp
 
-            maintainedX, maintainedY = parentX.path[start:end], parentY.path[start:end]   # Grab the values to be maintained from the arrays
-            solutionA, solutionB = [], []
+                maintainedX, maintainedY = parentX.path[start:end], parentY.path[start:end]   # Grab the values to be maintained from the arrays
+                solutionA, solutionB = [], []
 
-            i, j = 0, 0
-            while j < len(parentX.path) and i < len(parentX.path):
-                #print("Looping child 1...")
-                #print("Parent length: " + str(len(parentX.path)))
-                #print("i index: " + str(i))
-                #print("j index: " + str(j))
-                if j == start:
-                    solutionA.extend(maintainedX)
-                    j += len(maintainedX)
+                i, j = 0, 0
+                while j < len(parentX.path) and i < len(parentX.path):
+                    if j == start:
+                        solutionA.extend(maintainedX)
+                        j += len(maintainedX)
 
-                if parentY.path[i] not in maintainedX:
-                    solutionA.append(parentY.path[i])
-                    j += 1
+                    if parentY.path[i] not in maintainedX:
+                        solutionA.append(parentY.path[i])
+                        j += 1
+                    i += 1
                 
-                i += 1
-            
-            i, j = 0, 0
-            while j < len(parentY.path) and i < len(parentY.path):
-                #print("Looping child 2...")
-                #print("Parent length: " + str(len(parentY.path)))
-                #print("i index: " + str(i))
-                #print("j index: " + str(j))
-                if j == start:
-                    solutionB.extend(maintainedY)
-                    j += len(maintainedY)
-                
-                if parentX.path[i] not in maintainedY:
-                    solutionB.append(parentX.path[i])
-                    j += 1
-                
-                i += 1
+                i, j = 0, 0
+                while j < len(parentY.path) and i < len(parentY.path):
+                    if j == start:
+                        solutionB.extend(maintainedY)
+                        j += len(maintainedY)
+                    
+                    if parentX.path[i] not in maintainedY:
+                        solutionB.append(parentX.path[i]) 
+                        j += 1
+                    i += 1
 
-            # Append the children to the next generation
-            generation.extend([Solution(solutionA), Solution(solutionB)])
-        print("Crossover finished.")
+                # Append the children to the next generation
+                generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
     def partiallyMappedCrossover(self, solutions):
         generation = []
-        for x in range(0, len(solutions)-1, 2):
+        for x in range(0, len(solutions), 2):
             y = x+1
             parentX, parentY = solutions[x], solutions[y]   # Get the next set of parents
 
-            start, end = 0, 0
-            while start == end:
-                start, end =  random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
+            # Execute twice to create 4 children
+            for _ in range(2):
+                start, end = 0, 0
+                while start == end:
+                    start, end =  random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
 
-            if start > end: # Ensure that start <= end
-                temp = start
-                start = end
-                end = temp
+                if start > end: # Ensure that start <= end
+                    temp = start
+                    start = end
+                    end = temp
 
-            # Grab the values to be maintained from the arrays
-            maintainedX, maintainedY = parentX.path[start:end], parentY.path[start:end]  
+                # Grab the values to be maintained from the arrays
+                maintainedX, maintainedY = parentX.path[start:end], parentY.path[start:end]  
 
-            # Create two dictionaries to map the values in maintained to each other
-            crosssectionX = collections.defaultdict(int) 
-            crosssectionY = collections.defaultdict(int)
-            for i in range(len(maintainedX)):
-                crosssectionX[maintainedX[i]] = maintainedY[i]
-                crosssectionY[maintainedY[i]] = maintainedX[i]
+                # Create two dictionaries to map the values in maintained to each other
+                crosssectionX = collections.defaultdict(int) 
+                crosssectionY = collections.defaultdict(int)
+                for i in range(len(maintainedX)):
+                    crosssectionX[maintainedX[i]] = maintainedY[i]
+                    crosssectionY[maintainedY[i]] = maintainedX[i]
 
-            solutionA, solutionB = [], []
+                solutionA, solutionB = [], []
 
-            # While the value in the parent is in the crosssection, get the mapped value
-            # Then, append the initial or resulting value to the child solution
-            for i in range(0, start):
-                nextValueA = parentY.path[i]
-                while nextValueA in crosssectionX:
-                    nextValueA = crosssectionX[nextValueA]
-                solutionA.append(nextValueA)
+                # While the value in the parent is in the crosssection, get the mapped value
+                # Then, append the initial or resulting value to the child solution
+                for i in range(0, start):
+                    nextValueA = parentY.path[i]
+                    while nextValueA in crosssectionX:
+                        nextValueA = crosssectionX[nextValueA]
+                    solutionA.append(nextValueA)
 
-                nextValueB = parentX.path[i]
-                while nextValueB in crosssectionY:
-                    nextValueB = crosssectionY[nextValueB]
-                solutionB.append(nextValueB)
+                    nextValueB = parentX.path[i]
+                    while nextValueB in crosssectionY:
+                        nextValueB = crosssectionY[nextValueB]
+                    solutionB.append(nextValueB)
 
-            # Append the maintained subarrays to the opposite child solution
-            solutionA.extend(maintainedX)
-            solutionB.extend(maintainedY)
+                # Append the maintained subarrays to the opposite child solution
+                solutionA.extend(maintainedX)
+                solutionB.extend(maintainedY)
 
-            # Repeat the previous step for the end of the array
-            for i in range(end, len(parentX.path)):
-                nextValueA = parentY.path[i]
-                while nextValueA in crosssectionX:
-                    nextValueA = crosssectionX[nextValueA]
-                solutionA.append(nextValueA)
+                # Repeat the previous step for the end of the array
+                for i in range(end, len(parentX.path)):
+                    nextValueA = parentY.path[i]
+                    while nextValueA in crosssectionX:
+                        nextValueA = crosssectionX[nextValueA]
+                    solutionA.append(nextValueA)
 
-                nextValueB = parentX.path[i]
-                while nextValueB in crosssectionY:
-                    nextValueB = crosssectionY[nextValueB]
-                solutionB.append(nextValueB)
-            
-            # Append the children to the next generation
-            generation.extend([Solution(solutionA), Solution(solutionB)])
+                    nextValueB = parentX.path[i]
+                    while nextValueB in crosssectionY:
+                        nextValueB = crosssectionY[nextValueB]
+                    solutionB.append(nextValueB)
+                
+                # Append the children to the next generation
+                generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
     def cycleCrossover(self, solutions):
@@ -237,6 +229,7 @@ class Manager:
 
         # Reset the current generation to the intially generated first generation
         self.currentGeneration = list(self.firstGeneration)
+        keepCount = int(len(self.currentGeneration)/4)
         self.bestSolution = self.currentGeneration[0]     # Save the current best generation to determine when to exit
 
         while stalenessCount < maxStaleness:            
@@ -261,7 +254,7 @@ class Manager:
             Display.displayPath(self.graph, self.currentGeneration[0])
 
             # Execute Crossover on best solutions
-            newGeneration = self.currentGeneration[:int(len(self.currentGeneration)/2)]   # keep the top 50% of the generation
+            newGeneration = self.currentGeneration[:keepCount]   # keep the top 25% of the generation
             newGeneration.extend(self.crossoverSwitch(case, newGeneration))
             self.currentGeneration = newGeneration
 
