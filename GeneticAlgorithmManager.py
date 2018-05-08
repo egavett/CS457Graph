@@ -33,6 +33,10 @@ class Manager:
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
 
     ## Initialization Functions ##
+    # Resets the first generation of solutions. May be used for extened simulations.
+    def resetFirstGeneration():
+        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)
+
     # Create and return the first generation of solutions
     def generateSolutions(self, firstGenerationSize):
         generated = []
@@ -87,7 +91,20 @@ class Manager:
             solution = self.attemptMutation(solution)
 
 
-    ## Crossover Functions ##  
+    ## Crossover Functions ## 
+    # Takes the length of an array and return two random indices, sorted
+    def getRandomIndices(self, length):
+        start, end = 0, 0   # Values to return
+        while start == end: # Ensure that start and end are different values
+            start, end =  random.randrange(length), random.randrange(length) # Get start/end indices for the subarray to maintain
+
+        if start > end: # Ensure that start <= end
+            temp = start
+            start = end
+            end = temp
+
+        return start, end
+
     def orderedCrossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
@@ -96,14 +113,8 @@ class Manager:
             
             # Execute twice to create 4 children
             for _ in range(2):
-                start, end = 0, 0
-                while start == end:
-                    start, end =  random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
-
-                if start > end: # Ensure that start <= end
-                    temp = start
-                    start = end
-                    end = temp
+                # Get two random indices from within the array
+                start, end = self.getRandomIndices(len(parentX.path))
 
                 maintainedX, maintainedY = parentX.path[start:end], parentY.path[start:end]   # Grab the values to be maintained from the arrays
                 solutionA, solutionB = [], []
@@ -142,14 +153,8 @@ class Manager:
 
             # Execute twice to create 4 children
             for _ in range(2):
-                start, end = 0, 0
-                while start == end:
-                    start, end =  random.randrange(len(parentX.path)), random.randrange(len(parentX.path)) # Get start/end indices for the subarray to maintain
-
-                if start > end: # Ensure that start <= end
-                    temp = start
-                    start = end
-                    end = temp
+                # Get two random indices from within the array
+                start, end = self.getRandomIndices(len(parentX.path))
 
                 # Grab the values to be maintained from the arrays
                 maintainedX, maintainedY = parentX.path[start:end], parentY.path[start:end]  
