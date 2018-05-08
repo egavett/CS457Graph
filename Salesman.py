@@ -2,6 +2,7 @@
 # Main Function - manages control flow
 from GeneticAlgorithmManager import Manager
 from Graph import Graph
+import GraphGenerator
 
 # Imports the graph information from a textfile and stores it in a Graph object
 # File format:
@@ -22,14 +23,27 @@ def importGraph(fileName):
     return newGraph
 
 
-# Import graph data and create the Genetic Algorithm manager
-citiesGraph = importGraph('salesman2.txt')
-manager = Manager(citiesGraph)
+def main():
+    willGenerate = input("Generate a new graph before starting? (No => 0; Yes => 1) ")
 
-# Double check that the graph is valid: (x,y) == (y,x)
-citiesGraph.checkValidity()
+    if int(willGenerate) == 1:
+        GraphGenerator.generateGraph()
+        input("Press Enter to continue...")
 
-# Run the genetic algorithm for each supported crossover function
-for case in range(manager.crossoverCount):
-    manager.runAlgorithm(case)
-    input("Press Enter to continue...")
+    # Import graph data and create the Genetic Algorithm manager
+    citiesGraph = importGraph('generatedGraph.txt')
+    manager = Manager(citiesGraph)
+
+    # Uncomment to double check that the graph is valid: (x,y) == (y,x)
+    #print("Check for discrepancies in the graph...")
+    #citiesGraph.checkValidity()
+
+    # Run the genetic algorithm for each supported crossover function
+    for case in range(manager.crossoverCount):
+        manager.runAlgorithm(case)
+        input("Press Enter to continue...")
+
+    # Display the results of the algorithm
+    manager.finalDisplay()
+
+main()

@@ -16,7 +16,7 @@ class Solution:
         self.path = path
         self.cost = -1  # set cost to -1 until the solution is evaluated
         
-    # Debug: for printing
+    # For printing
     def __repr__(self):
         return "The path: {" + " ".join(str(e) for e in self.path) + "} costs: " + str(self.cost)
     def __str__(self):
@@ -24,7 +24,7 @@ class Solution:
         
 
 class Manager:
-    firstGenerationSize = 64                        # the size of the first generation of solutions
+    firstGenerationSize = 128                       # the size of the first generation of solutions
     crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
             0 : "Ordered Crossover",
             1 : "Partially Mapped Crossover"
@@ -49,9 +49,10 @@ class Manager:
     # Initializer
     def __init__(self, graph):
         self.graph = graph
-        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)   # Create and store the inital sample of solutions; start each iteration with the same data set
+        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)     # Create and store the inital sample of solutions; start each iteration with the same data set
         self.currentGeneration = []
-        self.bestSolution = self.firstGeneration[0]     # Save the current best generation to determine when to exit
+        self.bestSolution = self.firstGeneration[0]                                 # Save the current best generation to determine when to exit
+        self.results = []                                                           # Stores the results of each crossover for final display. Format: Tuple(crossoverCase, solution, generationCount)
 
     ## Evalutation and Mutation functions ##
     # Return the cost of following the given path
@@ -102,7 +103,6 @@ class Manager:
             temp = start
             start = end
             end = temp
-
         return start, end
 
     def orderedCrossover(self, solutions):
@@ -169,7 +169,7 @@ class Manager:
                 solutionA, solutionB = [], []
 
                 # While the value in the parent is in the crosssection, get the mapped value
-                # Then, append the initial or resulting value to the child solution
+                # Then, append the resulting value to the child solution
                 for i in range(0, start):
                     nextValueA = parentY.path[i]
                     while nextValueA in crosssectionX:
@@ -224,18 +224,31 @@ class Manager:
         else:
             return self.cycleCrossover(solutions)
     
+    ## Display Function ##
+    # Outputs the final results
+    def finalDisplay(self):
+        # Clear the terminal
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+        # Display each recorded result
+        for result in self.results:
+            print("Result for Crossover Function: " + self.crossoverNames[result[0]])
+            Display.displayPath(self.graph, result[1])
+            print("Solution found after " + str(result[2]) + " generations")
+
+
     ## 'Main' Function ##
     # Runs the genetic algorthm using a chosen crossover function
     def runAlgorithm(self, case):
-        # Helper variables. If the best solution doesn't change for a certain number of generations, then exit
-        maxStaleness = 20   
-        stalenessCount = 0
-        i = 0
+        # Helper variables. 
+        maxStaleness = 20   # If the best solution doesn't change for a certain number of generations, then exit
+        stalenessCount = 0  # Counts how many generations the best solution has existed
+        gen = 0             # Tracks the number of generations the algorithm has run for
 
         # Reset the current generation to the intially generated first generation
         self.currentGeneration = list(self.firstGeneration)
-        keepCount = int(len(self.currentGeneration)/4)
-        self.bestSolution = self.currentGeneration[0]     # Save the current best generation to determine when to exit
+        self.bestSolution = self.currentGeneration[0]       # Save the current best generation to determine when to exit
+        keepCount = int(len(self.currentGeneration)/4)      # The number of solutions to keep after each evalutation
 
         while stalenessCount < maxStaleness:            
             # Clear the terminal
@@ -254,8 +267,8 @@ class Manager:
                 self.bestSolution = self.currentGeneration[0]
 
             # Display current best in generation
-            i += 1
-            print("Current Generation: " + str(i))
+            gen += 1
+            print("Current Generation: " + str(gen))
             Display.displayPath(self.graph, self.currentGeneration[0])
 
             # Execute Crossover on best solutions
@@ -269,4 +282,8 @@ class Manager:
             print("Staleness: " + str(stalenessCount))
 
             # Wait 1/4 second before repeating
-            time.sleep(0.25)      
+            time.sleep(0.25) 
+
+        # Save the results of the crossover for final display
+        # Use (gen-maxStaleness) to get when the bestSolution was generated
+        self.results.append((case, self.bestSolution, gen-maxStaleness))

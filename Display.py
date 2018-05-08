@@ -8,7 +8,6 @@ from termcolor import colored
 
 # TODO: Replace with GUI
 def displayPath(graph, solution):
-    print(solution)
     vertexCount = len(solution.path)
     highlight = [[False for x in range(vertexCount)] for y in range(vertexCount)]    # 2D-array of booleans, signifies which edges are in the path
 
@@ -31,5 +30,4 @@ def displayPath(graph, solution):
             sys.stdout.write(" ")
         sys.stdout.write('| ')
         print("")
-    # Print the cost of the solutions
-    print("Solution Cost: " + str(solution.cost))
+    print(solution)
