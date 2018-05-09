@@ -79,7 +79,6 @@ class Manager:
     def attemptMutation(self, solution):   
         chance = 0.0001
         if random.random() < chance:
-
             i, j = random.randrange(len(solution.path)), random.randrange(len(solution.path))
             temp = solution.path[i]
             solution.path[i] = solution.path[j]
@@ -262,7 +261,7 @@ class Manager:
             self.evaluateCurrentGeneration()
 
             # Evaluate for staleness
-            if self.bestSolution.path == self.currentGeneration[0].path:
+            if self.bestSolution.cost == self.currentGeneration[0].cost:
                 stalenessCount += 1
             else:
                 # New solution: update helpers
@@ -285,7 +284,7 @@ class Manager:
             print("Staleness: " + str(stalenessCount))
 
             # Wait 1/4 second before repeating
-            time.sleep(0.1) 
+            time.sleep(0.25) 
 
         # Save the results of the crossover for final display
         # Use (gen-maxStaleness) to get when the bestSolution was generated

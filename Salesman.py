@@ -22,7 +22,6 @@ def importGraph(fileName):
     newGraph = Graph(vertexCount, weights)
     return newGraph
 
-
 def main():
     willGenerate = input("Generate a new graph before starting? (No => 0; Yes => 1) ")
 
@@ -45,5 +44,6 @@ def main():
 
     # Display the results of the algorithm
     manager.finalDisplay()
+
 
 main()
