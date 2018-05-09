@@ -106,6 +106,7 @@ class Manager:
         return start, end
 
     def orderedCrossover(self, solutions):
+        random.shuffle(solutions)
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
@@ -146,6 +147,7 @@ class Manager:
         return generation
 
     def partiallyMappedCrossover(self, solutions):
+        random.shuffle(solutions)
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
@@ -235,6 +237,7 @@ class Manager:
             print("Result for Crossover Function: " + self.crossoverNames[result[0]])
             Display.displayPath(self.graph, result[1])
             print("Solution found after " + str(result[2]) + " generations")
+            print()
 
 
     ## 'Main' Function ##
@@ -282,7 +285,7 @@ class Manager:
             print("Staleness: " + str(stalenessCount))
 
             # Wait 1/4 second before repeating
-            time.sleep(0.25) 
+            time.sleep(0.1) 
 
         # Save the results of the crossover for final display
         # Use (gen-maxStaleness) to get when the bestSolution was generated

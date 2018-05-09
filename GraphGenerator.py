@@ -15,7 +15,7 @@ def generateGraph():
     # Generate random weights for the graph
     for row in range(vertexCount):
         for column in range(row):
-            weight = random.randint(maxWeight, minWeight)
+            weight = random.randint(minWeight, maxWeight)
             graph[row][column] = weight
             graph[column][row] = weight
 
