@@ -241,7 +241,7 @@ class Manager:
 
     ## 'Main' Function ##
     # Runs the genetic algorthm using a chosen crossover function
-    def runAlgorithm(self, case):
+    def runAlgorithm(self, case, wait):
         # Helper variables. 
         maxStaleness = 20   # If the best solution doesn't change for a certain number of generations, then exit
         stalenessCount = 0  # Counts how many generations the best solution has existed
@@ -283,8 +283,9 @@ class Manager:
 
             print("Staleness: " + str(stalenessCount))
 
-            # Wait 1/4 second before repeating
-            #time.sleep(0.25) 
+            if wait:
+                # Wait 1/5 second before repeating
+                time.sleep(0.20) 
 
         # Save the results of the crossover for final display
         # Use (gen-maxStaleness) to get when the bestSolution was generated

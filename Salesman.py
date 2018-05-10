@@ -37,9 +37,15 @@ def main():
     #print("Check for discrepancies in the graph...")
     #citiesGraph.checkValidity()
 
+    # Ask if user wants a slowed display
+    wait = input("Would you like the algorithm to wait momentarily after each generation? (No => 0; Yes => 1) ")
+    willWait = False
+    if int(wait) == 1:
+        willWait = True
+
     # Run the genetic algorithm for each supported crossover function
     for case in range(manager.crossoverCount):
-        manager.runAlgorithm(case)
+        manager.runAlgorithm(case, willWait)
         input("Press Enter to continue...")
 
     # Display the results of the algorithm
