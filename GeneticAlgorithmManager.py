@@ -24,7 +24,7 @@ class Solution:
         
 
 class Manager:
-    firstGenerationSize = 128                       # the size of the first generation of solutions
+    firstGenerationSize = 2048                       # the size of the first generation of solutions
     crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
             0 : "Ordered Crossover",
             1 : "Partially Mapped Crossover"
@@ -77,7 +77,7 @@ class Manager:
     # Based on a small probability, mutate the solution by swapping the values two random indices
     # Swapping values guarantees the validity of the random solution
     def attemptMutation(self, solution):   
-        chance = 0.0001
+        chance = 0.001
         if random.random() < chance:
             i, j = random.randrange(len(solution.path)), random.randrange(len(solution.path))
             temp = solution.path[i]
@@ -284,7 +284,7 @@ class Manager:
             print("Staleness: " + str(stalenessCount))
 
             # Wait 1/4 second before repeating
-            time.sleep(0.25) 
+            #time.sleep(0.25) 
 
         # Save the results of the crossover for final display
         # Use (gen-maxStaleness) to get when the bestSolution was generated
