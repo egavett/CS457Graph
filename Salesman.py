@@ -23,33 +23,60 @@ def importGraph(fileName):
     return newGraph
 
 def main():
+    # Get User Preferences
+
+    # Generate new Graph?
     willGenerate = input("Generate a new graph before starting? (No => 0; Yes => 1) ")
 
     if int(willGenerate) == 1:
         GraphGenerator.generateGraph()
-        input("Press Enter to continue...")
+
+    # Metric Run?
+    mr = input("Would you like to calculate the metrics for each crossover function, or just see a demonstration? (0 => demonstration; 1 => metrics) ")
+    runs = 1
+    metricsRun = False
+    willWait = False
+    willDisplay = False
+    if int(mr) == 1:
+        metricsRun = True
+        runs = int(input("How many times would you like the algorithm run for? "))
+    else:
+        # Show Display?
+        d = input("Would you like to see the graph and path while the algorithm runs? (No => 0; Yes => 1) ")
+        if int(d) == 1:
+            willDisplay = 1
+
+            # Slowed Display?
+            wait = input("Would you like the algorithm to wait momentarily after each generation? (No => 0; Yes => 1) ")
+            if int(wait) == 1:
+                willWait = True
+
+
 
     # Import graph data and create the Genetic Algorithm manager
     citiesGraph = importGraph('generatedGraph.txt')
     manager = Manager(citiesGraph)
 
-    # Uncomment to double check that the graph is valid: (x,y) == (y,x)
-    #print("Check for discrepancies in the graph...")
-    #citiesGraph.checkValidity()
-
-    # Ask if user wants a slowed display
-    wait = input("Would you like the algorithm to wait momentarily after each generation? (No => 0; Yes => 1) ")
-    willWait = False
-    if int(wait) == 1:
-        willWait = True
-
-    # Run the genetic algorithm for each supported crossover function
+    allData = []
     for case in range(manager.crossoverCount):
-        manager.runAlgorithm(case, willWait)
-        input("Press Enter to continue...")
 
-    # Display the results of the algorithm
-    manager.finalDisplay()
+        if metricsRun:
+            # Find and printthe metrics data for the crossover
+            data = manager.runMetrics(case, runs)
+            data.print()
+            allData.append
+        else:
+        # Run the genetic algorithm for each supported crossover function
+            manager.runAlgorithm(case, willWait, metricsRun, willDisplay)
+            if willDisplay:
+                input("Press Enter to continue...")
 
+            # Display the results of the algorithm
+            manager.finalDisplay()
+
+    # Display the final metrics
+    if metricsRun:
+        for data in allData:
+            data.print()
 
 main()

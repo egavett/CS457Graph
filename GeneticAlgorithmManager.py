@@ -8,6 +8,7 @@ import os
 import random
 import operator
 import collections
+import math
 
 # Helper class for storing solution information
 class Solution:
@@ -21,7 +22,42 @@ class Solution:
         return "The path: {" + " ".join(str(e) for e in self.path) + "} costs: " + str(self.cost)
     def __str__(self):
         return "The path: {" + " ".join(str(e) for e in self.path) + "} costs: " + str(self.cost)
-        
+
+
+# Helper class: stores long-term metrics
+class Metrics:
+
+    def __init__(self, case):
+        self.case = case                # The case number for the crossover function the object tracks
+        self.bestSolution = None        # The cost and path of the best solution found during this run
+        self.bestGeneration = math.inf  # The shortest number generations that the crossover has run for
+        self.costs = []                 # Tracks the best cost from each run
+        self.generations = []           # Tracks the generation time from each run
+        self.meanCost = -1
+        self.medianCost =  -1
+        self.meanGeneration = -1 
+        self.medianCost =  -1
+
+    # Calculates the mean and median values of costs and generations
+    def calculateAverages(self):
+        self.meanCost = sum(self.costs)/len(self.costs) # Calculate mean cost
+        self.meanGeneration = sum(self.generations)/len(self.generations) # Calculate mean generation time
+
+        sortedCosts = list(sorted(self.costs))
+        self.medianCost = sortedCosts[int(len(sortedCosts)/2)]
+
+        sortedGenerations = list(sorted(self.generations))
+        self.medianCost = sortedCosts[int(len(sortedCosts)/2)]
+    
+    # Displays the metrics data
+    def print(self):
+        print("Metrics for " + Manager.crossoverNames[self.case])
+        print("Best Path: " + str(self.bestSolution))
+        print("Fastest Runtime : " +  str(self.bestGeneration) + " Generations")
+        print("Mean Cost: " + str(self.meanCost))
+        print("Median Cost: " + str(self.medianCost))
+        print("Mean Runtime: " + str(self.meanGeneration) + " Generations")
+        print("Median Runtime: " + str(self.meanGeneration) + " Generations")
 
 class Manager:
     firstGenerationSize = 4096                      # the size of the first generation of solutions
@@ -277,9 +313,9 @@ class Manager:
             print()
 
 
-    ## 'Main' Function ##
+    ## 'Main' Functions ##
     # Runs the genetic algorthm using a chosen crossover function
-    def runAlgorithm(self, case, wait):
+    def runAlgorithm(self, case, wait, metricsRun, willDisplay):
         # Helper variables. 
         maxStaleness = 20   # If the best solution doesn't change for a certain number of generations, then exit
         stalenessCount = 0  # Counts how many generations the best solution has existed
@@ -292,8 +328,9 @@ class Manager:
 
         while stalenessCount < maxStaleness:            
             # Clear the terminal
-            os.system('cls' if os.name == 'nt' else 'clear')
-            print("Testing Crossover Function: " + self.crossoverNames[case])
+            if willDisplay:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("Testing Crossover Function: " + self.crossoverNames[case])
 
             # Get the cost for each solution in the generation
             self.evaluateCurrentGeneration()
@@ -308,8 +345,10 @@ class Manager:
 
             # Display current best in generation
             gen += 1
-            print("Current Generation: " + str(gen))
-            Display.displayPath(self.graph, self.currentGeneration[0])
+            if willDisplay:
+                print("Current Generation: " + str(gen))
+                Display.displayPath(self.graph, self.currentGeneration[0])
+                print("Staleness: " + str(stalenessCount))
 
             # Execute Crossover on best solutions
             newGeneration = self.currentGeneration[:keepCount]   # keep the top 25% of the generation
@@ -319,12 +358,42 @@ class Manager:
             # attempt mutation on each solution
             self.mutateGeneration()
 
-            print("Staleness: " + str(stalenessCount))
-
             if wait:
                 # Wait 1/5 second before repeating
                 time.sleep(0.20) 
 
-        # Save the results of the crossover for final display
+        # For non-metric runs, save the results of the crossover for final display
+        # Otherwise, return the values for the metric object
         # Use (gen-maxStaleness) to get when the bestSolution was generated
-        self.results.append((case, self.bestSolution, gen-maxStaleness))
+        if not metricsRun:
+            self.results.append((case, self.bestSolution, gen-maxStaleness))
+        else:
+            return (self.bestSolution, gen-maxStaleness)
+
+    # Runs the algorithm for each crossover multiple times to find best and average performance
+    def runMetrics(self, case, runs):
+        # Create metrics object
+        data = Metrics(case)
+
+        print("Testing Crossover Function: " + self.crossoverNames[case])
+
+        # Run the algorithm the specified number of times
+        for _ in range(runs):
+            solution, time = self.runAlgorithm(case, False, True, False)
+            
+            # Apend new data
+            data.costs.append(solution.cost)
+            data.generations.append(time)
+
+            # Set new bests
+            if data.bestSolution != None:
+                if solution.cost < data.bestSolution.cost:
+                    data.bestSolution = solution
+            else:
+                data.bestSolution = solution
+            if time < data.bestGeneration:
+                data.bestGeneration = time
+
+        # Calculate averages
+        data.calculateAverages()
+        return data
