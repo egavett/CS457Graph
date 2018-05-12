@@ -64,7 +64,8 @@ class Manager:
     crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
             0 : "Ordered Crossover",
             1 : "Partially Mapped Crossover",
-            2 : "Maximal Preservative Crossover"
+            2 : "Maximal Preservative Crossover",
+            3 : "Alternating Crossover"
             #3 : "Cycle Crossover"
     }
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
@@ -146,35 +147,35 @@ class Manager:
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = solutions[x], solutions[y]   # Get the next set of parents
+            parentX, parentY = solutions[x].path, solutions[y].path   # Get the next set of parents
             
             # Execute twice to create 4 children
             for _ in range(2):
                 # Get two random indices from within the array
-                start, end = self.getRandomIndices(len(parentX.path))
+                start, end = self.getRandomIndices(len(parentX))
 
-                maintainedX, maintainedY = parentX.path[start:end], parentY.path[start:end]   # Grab the values to be maintained from the arrays
+                maintainedX, maintainedY = parentX[start:end], parentY[start:end]   # Grab the values to be maintained from the arrays
                 solutionA, solutionB = [], []
 
                 i, j = 0, 0
-                while j < len(parentX.path) and i < len(parentX.path):
+                while j < len(parentX) and i < len(parentX):
                     if j == start:
                         solutionA.extend(maintainedX)
                         j += len(maintainedX)
 
-                    if parentY.path[i] not in maintainedX:
-                        solutionA.append(parentY.path[i])
+                    if parentY[i] not in maintainedX:
+                        solutionA.append(parentY[i])
                         j += 1
                     i += 1
                 
                 i, j = 0, 0
-                while j < len(parentY.path) and i < len(parentY.path):
+                while j < len(parentY) and i < len(parentY):
                     if j == start:
                         solutionB.extend(maintainedY)
                         j += len(maintainedY)
                     
-                    if parentX.path[i] not in maintainedY:
-                        solutionB.append(parentX.path[i]) 
+                    if parentX[i] not in maintainedY:
+                        solutionB.append(parentX[i]) 
                         j += 1
                     i += 1
 
@@ -187,15 +188,15 @@ class Manager:
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = solutions[x], solutions[y]   # Get the next set of parents
+            parentX, parentY = solutions[x].path, solutions[y].path   # Get the next set of parents
 
             # Execute twice to create 4 children
             for _ in range(2):
                 # Get two random indices from within the array
-                start, end = self.getRandomIndices(len(parentX.path))
+                start, end = self.getRandomIndices(len(parentX))
 
                 # Grab the values to be maintained from the arrays
-                maintainedX, maintainedY = parentX.path[start:end], parentY.path[start:end]  
+                maintainedX, maintainedY = parentX[start:end], parentY[start:end]  
 
                 # Create two dictionaries to map the values in maintained to each other
                 crosssectionX = collections.defaultdict(int) 
@@ -209,12 +210,12 @@ class Manager:
                 # While the value in the parent is in the crosssection, get the mapped value
                 # Then, append the resulting value to the child solution
                 for i in range(0, start):
-                    nextValueA = parentY.path[i]
+                    nextValueA = parentY[i]
                     while nextValueA in crosssectionX:
                         nextValueA = crosssectionX[nextValueA]
                     solutionA.append(nextValueA)
 
-                    nextValueB = parentX.path[i]
+                    nextValueB = parentX[i]
                     while nextValueB in crosssectionY:
                         nextValueB = crosssectionY[nextValueB]
                     solutionB.append(nextValueB)
@@ -224,13 +225,13 @@ class Manager:
                 solutionB.extend(maintainedY)
 
                 # Repeat the previous step for the end of the array
-                for i in range(end, len(parentX.path)):
-                    nextValueA = parentY.path[i]
+                for i in range(end, len(parentX)):
+                    nextValueA = parentY[i]
                     while nextValueA in crosssectionX:
                         nextValueA = crosssectionX[nextValueA]
                     solutionA.append(nextValueA)
 
-                    nextValueB = parentX.path[i]
+                    nextValueB = parentX[i]
                     while nextValueB in crosssectionY:
                         nextValueB = crosssectionY[nextValueB]
                     solutionB.append(nextValueB)
@@ -274,6 +275,32 @@ class Manager:
                 generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
+    # Alternate
+    # Unless n is even, this crossover only results in 2 children, so execute once per pair
+    def alternatingCrossover(self, solutions):
+        generation = []
+        for x in range(0, len(solutions), 2):
+            y = x+1
+            parentX, parentY = solutions[x].path, solutions[y].path   # Get the next set of parents
+
+            solutionA, solutionB = [], []
+            
+            for i in range(len(parentX)):
+                # Alternate between vertices, adding missing ones to the children
+                # Start with parentX
+                if parentX[i] not in solutionA:
+                    solutionA.append(parentX[i])
+                if parentY[i] not in solutionA:
+                    solutionA.append(parentY[i])
+                
+                # Start with parentY
+                if parentY[i] not in solutionB:
+                    solutionB.append(parentY[i])
+                if parentX[i] not in solutionB:
+                    solutionB.append(parentX[i])
+                generation.extend([Solution(solutionA), Solution(solutionB)])
+        return generation
+
     def cycleCrossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
@@ -296,6 +323,8 @@ class Manager:
             return self.partiallyMappedCrossover(solutions)
         elif case == 2:
             return self.maximalPreservativeCrossover(solutions)
+        elif case == 3:
+            return self.alternatingCrossover(solutions)
         else:
             return self.cycleCrossover(solutions)
     
@@ -327,10 +356,7 @@ class Manager:
         keepCount = int(len(self.currentGeneration)/4)      # The number of solutions to keep after each evalutation
 
         while stalenessCount < maxStaleness:            
-            # Clear the terminal
-            if willDisplay:
-                os.system('cls' if os.name == 'nt' else 'clear')
-                print("Testing Crossover Function: " + self.crossoverNames[case])
+            
 
             # Get the cost for each solution in the generation
             self.evaluateCurrentGeneration()
@@ -346,6 +372,8 @@ class Manager:
             # Display current best in generation
             gen += 1
             if willDisplay:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("Testing Crossover Function: " + self.crossoverNames[case])
                 print("Current Generation: " + str(gen))
                 Display.displayPath(self.graph, self.currentGeneration[0])
                 print("Staleness: " + str(stalenessCount))
