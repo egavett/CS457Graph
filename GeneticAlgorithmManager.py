@@ -143,7 +143,6 @@ class Manager:
         return start, end
 
     def orderedCrossover(self, solutions):
-        random.shuffle(solutions)
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
@@ -184,7 +183,6 @@ class Manager:
         return generation
 
     def partiallyMappedCrossover(self, solutions):
-        random.shuffle(solutions)
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
@@ -288,15 +286,15 @@ class Manager:
             for i in range(len(parentX)):
                 # Alternate between vertices, adding missing ones to the children
                 # Start with parentX
-                if parentX[i] not in solutionA:
+                if not parentX[i] in solutionA:
                     solutionA.append(parentX[i])
-                if parentY[i] not in solutionA:
+                if not parentY[i] in solutionA:
                     solutionA.append(parentY[i])
                 
                 # Start with parentY
-                if parentY[i] not in solutionB:
+                if not parentY[i] in solutionB:
                     solutionB.append(parentY[i])
-                if parentX[i] not in solutionB:
+                if not parentX[i] in solutionB:
                     solutionB.append(parentX[i])
                 generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
@@ -379,8 +377,9 @@ class Manager:
                 print("Staleness: " + str(stalenessCount))
 
             # Execute Crossover on best solutions
-            newGeneration = self.currentGeneration[:keepCount]   # keep the top 25% of the generation
-            newGeneration.extend(self.crossoverSwitch(case, newGeneration))
+            newGeneration = self.currentGeneration[:keepCount]                  # keep the top 25% of the generation
+            random.shuffle(newGeneration)                                       # shuffle; ensures more genetic variety
+            newGeneration.extend(self.crossoverSwitch(case, newGeneration))     # Crossover select
             self.currentGeneration = newGeneration
 
             # attempt mutation on each solution
