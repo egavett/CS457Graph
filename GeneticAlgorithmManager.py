@@ -24,11 +24,12 @@ class Solution:
         
 
 class Manager:
-    firstGenerationSize = 2048                       # the size of the first generation of solutions
+    firstGenerationSize = 4096                      # the size of the first generation of solutions
     crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
             0 : "Ordered Crossover",
-            1 : "Partially Mapped Crossover"
-            #2 : "Cycle Crossover"
+            1 : "Partially Mapped Crossover",
+            2 : "Maximal Preservative Crossover"
+            #3 : "Cycle Crossover"
     }
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
 
@@ -202,6 +203,41 @@ class Manager:
                 generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
+    def maximalPreservativeCrossover(self, solutions):
+        generation = []
+        for x in range(0, len(solutions), 2):
+            y = x+1
+
+            # Execute twice to create 4 children
+            for _ in range(2):
+                parentX, parentY = list(solutions[x].path), list(solutions[y].path)   # Get the next set of parents. Copy the path, as we need to make alterations
+
+                # Get two random indices from within the array
+                start, end = self.getRandomIndices(len(parentX))
+
+                # Grab the values to be maintained from the arrays
+                maintainedX, maintainedY = parentX[start:end], parentY[start:end]  
+
+                # Removed maintained values from opposite parent
+                for v in maintainedY:
+                    parentX.remove(v)
+                for v in maintainedX:
+                    parentY.remove(v)
+
+                solutionA, solutionB = [], []
+
+                # Append the maintained arrays to the children
+                solutionA.extend(maintainedX)
+                solutionB.extend(maintainedY)
+
+                # Append the remaining values from the opposite parent
+                solutionA.extend(parentY)
+                solutionB.extend(parentX)
+
+                # Append the children to the next generation
+                generation.extend([Solution(solutionA), Solution(solutionB)])
+        return generation
+
     def cycleCrossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
@@ -210,7 +246,7 @@ class Manager:
             
             solutionA, solutionB = [None] * len(parentX).path, [None] * len(parentX.path) # Populate with none so we can add the solutions at arbritary indices
 
-            
+
 
             # Append the children to the next generation
             generation.extend([Solution(solutionA), Solution(solutionB)])
@@ -222,6 +258,8 @@ class Manager:
             return self.orderedCrossover(solutions)
         elif case == 1:
             return self.partiallyMappedCrossover(solutions)
+        elif case == 2:
+            return self.maximalPreservativeCrossover(solutions)
         else:
             return self.cycleCrossover(solutions)
     
