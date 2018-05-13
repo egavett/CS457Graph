@@ -9,6 +9,7 @@ import random
 import operator
 import collections
 import math
+import copy
 
 # Helper class for storing solution information
 class Solution:
@@ -67,10 +68,11 @@ class Manager:
             1 : "Partially Mapped Crossover",
             2 : "Maximal Preservative Crossover",
             3 : "Alternating Crossover",
-            4 : "Sorted Match Crossover"
+            4 : "Sorted Match Crossover",
+            5 : "Edge Recombination Crossover"
     }
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
-
+#geneticEdgeRecombinationCrossover(solutions)
     ## Initialization Functions ##
     # Create and return the first generation of solutions
     def generateSolutions(self, firstGenerationSize):
@@ -336,6 +338,80 @@ class Manager:
                         generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
+    # Helper method for ERCX: get the smallest set from an edge dictionary
+    def getSmallestSet(self, dictionary):
+        # Get all vertices and edges
+        edges = dictionary.items()
+
+        # Sort by length
+        edges.sort(key=lambda tup: len(tup[1]))
+
+        return edges[0][0]
+
+    # Create a dictionary that holds every edge in both paths, combine edges to form a child solution
+    # Idealy, this creates a solution that uses the edges, not vertices, as traits
+    def edgeRecombinationCrossover(self, solutions):
+        generation = []
+
+        for x in range(0, len(solutions), 2):
+            y = x+1
+            parentX, parentY = solutions[x].path, solutions[y].path
+
+            # Create a dictionary that maps each vertex to the vertices it shares edges with in both parents
+            edges = collections.defaultdict(set)
+            for i in range(len(parentX)):
+                j = i+1
+                if j >= len(parentX):
+                    j = 0
+                v1, v2, v3, v4 = parentX[i], parentX[j], parentY[i], parentY[j]
+                edges[v1].add(v2)
+                edges[v2].add(v1)
+                edges[v3].add(v4)
+                edges[v4].add(v3)
+
+            for _ in range(4):  # Create 4 children
+                # Copy the map
+                edgesCopy = copy.copy(edges)
+            
+                solution = []
+
+                # 1) Add a random vertex to the solution
+                solution.append(random.choice(parentX))
+                done = False
+                while not done: #Repeat until every vertex is visited
+                    # 2) Remove all instances of the last visted vertex from the dictionary
+                    vertex = solution[-1]
+                    for vertices in edgesCopy.values():
+                        vertices.discard(vertex)
+                
+                    # 3) If the set of the vertex isn't empty...
+                    if len(edgesCopy[vertex]) > 0:
+                        # 4) Go to an adjacent city that has the fewest number of edges
+                        adjacent = []
+
+                        # Append vertices and edges in tuple
+                        for v in edgesCopy[vertex]:
+                            adjacent.append((v, edgesCopy[v]))
+
+                        # Sort by length of edges, append the vertex with the fewest
+                        adjacent.sort(key=lambda tup: len(tup[1]))
+                        solution.append(adjacent[0][0])
+                    else:
+                        # 5) If all vertices visited, exit. 
+                        if len(solution) == len(parentX):
+                            done = True
+                        else:
+                            #Otherwise, select an unvisited vertex
+                            repeat = True
+                            while repeat:
+                                v = random.choice(parentX)
+                                if v not in solution:
+                                    solution.append(v)
+                                    repeat = False
+                generation.append(Solution(solution))
+
+        return generation
+
     def crossoverSwitch(self, case, solutions):
         # Selects the correct crossover function based on case
         if case == 0:
@@ -349,7 +425,7 @@ class Manager:
         elif case == 4:
             return self.sortedMatchCrossover(solutions)
         else:
-            return None
+            return self.edgeRecombinationCrossover(solutions)
     
     ## Display Function ##
     # Outputs the final results
