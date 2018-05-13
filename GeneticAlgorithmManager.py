@@ -65,8 +65,8 @@ class Manager:
             0 : "Ordered Crossover",
             1 : "Partially Mapped Crossover",
             2 : "Maximal Preservative Crossover",
-            3 : "Alternating Crossover"
-            #3 : "Cycle Crossover"
+            3 : "Alternating Crossover",
+            4 : "Sorted Match Crossover"
     }
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
 
@@ -79,7 +79,7 @@ class Manager:
     def generateSolutions(self, firstGenerationSize):
         generated = []
         for _ in range(firstGenerationSize):
-            path = list(self.graph.verticies)         # Create a copy of the vertex list
+            path = list(self.graph.vertices)         # Create a copy of the vertex list
             random.shuffle(path)                # Shuffle the vertex list: creating a random path through the graph
             generated.append(Solution(path))    # Append to the initial solution set
         return generated
@@ -299,18 +299,26 @@ class Manager:
                 generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
-    def cycleCrossover(self, solutions):
+    # Find subtours in each parent that:
+    # a) are the same length
+    # b) start and end at the same cities
+    # c) contain the same cities
+    # Swap these subtours in the parents to create children
+    # There are no guarantees with this crossover, so it is comprehensive in looking for children
+    def sortedMatchCrossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = solutions[x], solutions[y]   # Get the next set of parents
-            
-            solutionA, solutionB = [None] * len(parentX).path, [None] * len(parentX.path) # Populate with none so we can add the solutions at arbritary indices
+            parentX, parentY = solutions[x].path, solutions[y].path     # Get the next set of parent
+            for tourLength in range(3, len(parentX)):                   # Search all tour lengths from 4-len(parent)
+                for v in range(len(parentX)-tourLength):                # Search all possible tours of this length
+                    tourX, tourY = parentX[v:v+tourLength], parentY[v:v+tourLength]                         # Get the subtours
+                    if sorted(tourX) == sorted(tourY) and tourX[0] == tourY[0] and tourX[-1] == tourY[-1]:    # Verify b and c
+                        solutionA, solutionB = list(parentX), list(parentY) # Copy the lists
 
-
-
-            # Append the children to the next generation
-            generation.extend([Solution(solutionA), Solution(solutionB)])
+                        # Swap the subtours
+                        solutionA[v:v+tourLength], solutionB[v:v+tourLength] = solutionB[v:v+tourLength], solutionA[v:v+tourLength]
+                        generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
     def crossoverSwitch(self, case, solutions):
@@ -323,8 +331,10 @@ class Manager:
             return self.maximalPreservativeCrossover(solutions)
         elif case == 3:
             return self.alternatingCrossover(solutions)
+        elif case == 4:
+            return self.sortedMatchCrossover(solutions)
         else:
-            return self.cycleCrossover(solutions)
+            return None
     
     ## Display Function ##
     # Outputs the final results
@@ -354,8 +364,6 @@ class Manager:
         keepCount = int(len(self.currentGeneration)/4)      # The number of solutions to keep after each evalutation
 
         while stalenessCount < maxStaleness:            
-            
-
             # Get the cost for each solution in the generation
             self.evaluateCurrentGeneration()
 
@@ -375,6 +383,9 @@ class Manager:
                 print("Current Generation: " + str(gen))
                 Display.displayPath(self.graph, self.currentGeneration[0])
                 print("Staleness: " + str(stalenessCount))
+                # Debug: Ensure that solution is valid
+                if sorted(self.bestSolution.path) != self.graph.vertices:
+                    print("SOLUTION IS INVALID. CHECK CROSSOVER " + self.crossoverNames[case].upper())
 
             # Execute Crossover on best solutions
             newGeneration = self.currentGeneration[:keepCount]                  # keep the top 25% of the generation
