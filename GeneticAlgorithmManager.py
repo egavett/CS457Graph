@@ -295,25 +295,21 @@ class Manager:
 
             solutionA, solutionB = [], []
             
-            while len(parentX) > 0:
+            for i in range(len(parentX)):
                 # Alternate between vertices, adding missing ones to the children
                 # Start with parentX
-                if not parentX[0] in solutionA:
-                    solutionA.append(parentX[0])
-                if not parentY[0] in solutionA:
-                    solutionA.append(parentY[0])
+                if not parentX[i] in solutionA:
+                    solutionA.append(parentX[i])
+                if not parentY[i] in solutionA:
+                    solutionA.append(parentY[i])
                 
                 # Start with parentY
-                if not parentY[0] in solutionB:
-                    solutionB.append(parentY[0])
-                if not parentX[0] in solutionB:
-                    solutionB.append(parentX[0])
+                if not parentY[i] in solutionB:
+                    solutionB.append(parentY[i])
+                if not parentX[i] in solutionB:
+                    solutionB.append(parentX[i])
 
-                # Remove the vertices - for efficiency
-                parentX.pop(0)
-                parentY.pop(0)
-
-                generation.extend([Solution(solutionA), Solution(solutionB)])
+            generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
     # Find subtours in each parent that:
@@ -327,7 +323,7 @@ class Manager:
         for x in range(0, len(solutions), 2):
             y = x+1
             parentX, parentY = solutions[x].path, solutions[y].path     # Get the next set of parent
-            for tourLength in range(3, len(parentX)):                   # Search all tour lengths from 4-len(parent)
+            for tourLength in range(2, int(len(parentX)/2)):                   # Search all tour lengths from 3-len(parent)/2
                 for v in range(len(parentX)-tourLength):                # Search all possible tours of this length
                     tourX, tourY = parentX[v:v+tourLength], parentY[v:v+tourLength]                         # Get the subtours
                     if sorted(tourX) == sorted(tourY) and tourX[0] == tourY[0] and tourX[-1] == tourY[-1]:    # Verify b and c
@@ -337,16 +333,6 @@ class Manager:
                         solutionA[v:v+tourLength], solutionB[v:v+tourLength] = solutionB[v:v+tourLength], solutionA[v:v+tourLength]
                         generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
-
-    # Helper method for ERCX: get the smallest set from an edge dictionary
-    def getSmallestSet(self, dictionary):
-        # Get all vertices and edges
-        edges = dictionary.items()
-
-        # Sort by length
-        edges.sort(key=lambda tup: len(tup[1]))
-
-        return edges[0][0]
 
     # Create a dictionary that holds every edge in both paths, combine edges to form a child solution
     # Idealy, this creates a solution that uses the edges, not vertices, as traits
