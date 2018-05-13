@@ -64,7 +64,7 @@ def main():
             # Find and printthe metrics data for the crossover
             data = manager.runMetrics(case, runs)
             data.print()
-            allData.append
+            allData.append(data)
         else:
         # Run the genetic algorithm for each supported crossover function
             manager.runAlgorithm(case, willWait, metricsRun, willDisplay)

@@ -38,7 +38,7 @@ class Metrics:
         self.meanCost = -1
         self.medianCost =  -1
         self.meanGeneration = -1 
-        self.medianCost =  -1
+        self.medianGeneration =  -1
 
     # Calculates the mean and median values of costs and generations
     def calculateAverages(self):
@@ -49,7 +49,7 @@ class Metrics:
         self.medianCost = sortedCosts[int(len(sortedCosts)/2)]
 
         sortedGenerations = list(sorted(self.generations))
-        self.medianCost = sortedCosts[int(len(sortedCosts)/2)]
+        self.medianGeneration = sortedCosts[int(len(sortedGenerations)/2)]
     
     # Displays the metrics data
     def print(self):
@@ -59,7 +59,7 @@ class Metrics:
         print("Mean Cost: " + str(self.meanCost))
         print("Median Cost: " + str(self.medianCost))
         print("Mean Runtime: " + str(self.meanGeneration) + " Generations")
-        print("Median Runtime: " + str(self.meanGeneration) + " Generations")
+        print("Median Runtime: " + str(self.medianGeneration) + " Generations")
 
 class Manager:
     firstGenerationSize = 4096                      # the size of the first generation of solutions
