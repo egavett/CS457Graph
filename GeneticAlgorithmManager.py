@@ -82,13 +82,13 @@ class Manager:
         return generated
 
     # Resets the first generation of solutions. Used for extended simulations.
-    def resetFirstGeneration():
+    def resetFirstGeneration(self):
         self.firstGeneration = self.generateSolutions(self.firstGenerationSize)
 
     # Initializer
     def __init__(self, graph):
         self.graph = graph
-        self.firstGeneration = self.resetFirstGeneration()     # Create and store the inital sample of solutions; start each iteration with the same data set
+        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)    # Create and store the inital sample of solutions; start each iteration with the same data set
         self.currentGeneration = []
         self.bestSolution = self.firstGeneration[0]            # Save the current best generation to determine when to exit
         self.results = []                                      # Stores the results of each crossover for final display. Format: Tuple(crossoverCase, solution, generationCount)
@@ -289,23 +289,28 @@ class Manager:
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = solutions[x].path, solutions[y].path   # Get the next set of parents
+            parentX, parentY = list(solutions[x].path), list(solutions[y].path)   # Get the next set of parents
 
             solutionA, solutionB = [], []
             
-            for i in range(len(parentX)):
+            while len(parentX) > 0:
                 # Alternate between vertices, adding missing ones to the children
                 # Start with parentX
-                if not parentX[i] in solutionA:
-                    solutionA.append(parentX[i])
-                if not parentY[i] in solutionA:
-                    solutionA.append(parentY[i])
+                if not parentX[0] in solutionA:
+                    solutionA.append(parentX[0])
+                if not parentY[0] in solutionA:
+                    solutionA.append(parentY[0])
                 
                 # Start with parentY
-                if not parentY[i] in solutionB:
-                    solutionB.append(parentY[i])
-                if not parentX[i] in solutionB:
-                    solutionB.append(parentX[i])
+                if not parentY[0] in solutionB:
+                    solutionB.append(parentY[0])
+                if not parentX[0] in solutionB:
+                    solutionB.append(parentX[0])
+
+                # Remove the vertices - for efficiency
+                parentX.pop(0)
+                parentY.pop(0)
+
                 generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
