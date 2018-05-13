@@ -71,12 +71,12 @@ def main():
             if willDisplay:
                 input("Press Enter to continue...")
 
-            # Display the results of the algorithm
-            manager.finalDisplay()
-
     # Display the final metrics
     if metricsRun:
         for data in allData:
             data.print()
+    else:
+        # Display the results of the algorithm
+        manager.finalDisplay()
 
 main()
