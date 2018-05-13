@@ -26,13 +26,14 @@ class Solution:
 
 # Helper class: stores long-term metrics
 class Metrics:
-
+    # Initializer
     def __init__(self, case):
         self.case = case                # The case number for the crossover function the object tracks
         self.bestSolution = None        # The cost and path of the best solution found during this run
         self.bestGeneration = math.inf  # The shortest number generations that the crossover has run for
         self.costs = []                 # Tracks the best cost from each run
         self.generations = []           # Tracks the generation time from each run
+        # Mean and median for costs and generations. Calculated at the end
         self.meanCost = -1
         self.medianCost =  -1
         self.meanGeneration = -1 
@@ -71,10 +72,6 @@ class Manager:
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
 
     ## Initialization Functions ##
-    # Resets the first generation of solutions. May be used for extened simulations.
-    def resetFirstGeneration():
-        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)
-
     # Create and return the first generation of solutions
     def generateSolutions(self, firstGenerationSize):
         generated = []
@@ -84,16 +81,20 @@ class Manager:
             generated.append(Solution(path))    # Append to the initial solution set
         return generated
 
+    # Resets the first generation of solutions. Used for extended simulations.
+    def resetFirstGeneration():
+        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)
+
     # Initializer
     def __init__(self, graph):
         self.graph = graph
-        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)     # Create and store the inital sample of solutions; start each iteration with the same data set
+        self.firstGeneration = self.resetFirstGeneration()     # Create and store the inital sample of solutions; start each iteration with the same data set
         self.currentGeneration = []
-        self.bestSolution = self.firstGeneration[0]                                 # Save the current best generation to determine when to exit
-        self.results = []                                                           # Stores the results of each crossover for final display. Format: Tuple(crossoverCase, solution, generationCount)
+        self.bestSolution = self.firstGeneration[0]            # Save the current best generation to determine when to exit
+        self.results = []                                      # Stores the results of each crossover for final display. Format: Tuple(crossoverCase, solution, generationCount)
 
-    ## Evalutation and Mutation functions ##
-    # Return the cost of following the given path
+    ## Evalutation Functions ##
+    # Return the cost of following the given path 
     def getCost(self, path):
         path = list(path)
         cost = 0
@@ -112,6 +113,8 @@ class Manager:
                 solution.cost = self.getCost(solution.path)
         self.currentGeneration.sort(key = operator.attrgetter('cost'))
 
+
+    ## Mutation Functions ##
     # Based on a small probability, mutate the solution by swapping the values two random indices
     # Swapping values guarantees the validity of the random solution
     def attemptMutation(self, solution):   
@@ -131,6 +134,7 @@ class Manager:
 
     ## Crossover Functions ## 
     # Takes the length of an array and return two random indices, sorted
+    # Used in many of the crossover functions
     def getRandomIndices(self, length):
         start, end = 0, 0   # Values to return
         while start == end: # Ensure that start and end are different values
@@ -142,6 +146,8 @@ class Manager:
             end = temp
         return start, end
 
+    # Take subsections of each parent - place in children at same indices
+    # Iterate over the other parent - insert values not in the subsection
     def orderedCrossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
@@ -182,6 +188,8 @@ class Manager:
                 generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
+    # Take subsections of each parent - place in children and map to each other
+    # Iterate over other parent - if vertex in subsection, place the mapped value instead
     def partiallyMappedCrossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
@@ -238,6 +246,8 @@ class Manager:
                 generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
+    # Append a subsection of one parent to the child
+    # Iterate through the second parent, append vertices that are not in the child
     def maximalPreservativeCrossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
@@ -273,7 +283,7 @@ class Manager:
                 generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
-    # Alternate
+    # Alternate between each parent, appending the next vertex (if not in child)
     # Unless n is even, this crossover only results in 2 children, so execute once per pair
     def alternatingCrossover(self, solutions):
         generation = []
@@ -385,7 +395,7 @@ class Manager:
                 print("Staleness: " + str(stalenessCount))
                 # Debug: Ensure that solution is valid
                 if sorted(self.bestSolution.path) != self.graph.vertices:
-                    print("SOLUTION IS INVALID. CHECK CROSSOVER " + self.crossoverNames[case].upper())
+                    print("SOLUTION IS INVALID. CHECK " + self.crossoverNames[case].upper())
 
             # Execute Crossover on best solutions
             newGeneration = self.currentGeneration[:keepCount]                  # keep the top 25% of the generation
@@ -397,7 +407,7 @@ class Manager:
             self.mutateGeneration()
 
             if wait:
-                # Wait 1/5 second before repeating
+                # Wait before repeating
                 time.sleep(0.20) 
 
         # For non-metric runs, save the results of the crossover for final display
@@ -417,9 +427,13 @@ class Manager:
 
         # Run the algorithm the specified number of times
         for _ in range(runs):
+            # Reset the first generation
+            self.resetFirstGeneration()
+
+            # Run the algorithm
             solution, time = self.runAlgorithm(case, False, True, False)
             
-            # Apend new data
+            # Append new data
             data.costs.append(solution.cost)
             data.generations.append(time)
 
