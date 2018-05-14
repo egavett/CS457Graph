@@ -167,23 +167,29 @@ class Manager:
                 i, j = 0, 0
                 while j < len(parentX) and i < len(parentX):
                     if j == start:
+                        # Place the subsection at the same index
                         solutionA.extend(maintainedX)
                         j += len(maintainedX)
-
+                    
+                    # If the next value is not in the array, place it in the next empty index
                     if parentY[i] not in maintainedX:
                         solutionA.append(parentY[i])
                         j += 1
+                    # Always increment to the next value in the parent
                     i += 1
                 
                 i, j = 0, 0
                 while j < len(parentY) and i < len(parentY):
                     if j == start:
+                        # Place the subsection at the same index
                         solutionB.extend(maintainedY)
                         j += len(maintainedY)
                     
+                    # If the next value is not in the array, place it in the next empty index
                     if parentX[i] not in maintainedY:
                         solutionB.append(parentX[i]) 
                         j += 1
+                    # Always increment to the next value in the parent
                     i += 1
 
                 # Append the children to the next generation
@@ -298,17 +304,16 @@ class Manager:
             for i in range(len(parentX)):
                 # Alternate between vertices, adding missing ones to the children
                 # Start with parentX
-                if not parentX[i] in solutionA:
+                if parentX[i] not in solutionA:
                     solutionA.append(parentX[i])
-                if not parentY[i] in solutionA:
+                if parentY[i] not in solutionA:
                     solutionA.append(parentY[i])
                 
                 # Start with parentY
-                if not parentY[i] in solutionB:
+                if parentY[i] not in solutionB:
                     solutionB.append(parentY[i])
-                if not parentX[i] in solutionB:
+                if parentX[i] not in solutionB:
                     solutionB.append(parentX[i])
-
             generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
@@ -395,7 +400,6 @@ class Manager:
                                     solution.append(v)
                                     repeat = False
                 generation.append(Solution(solution))
-
         return generation
 
     def crossoverSwitch(self, case, solutions):
