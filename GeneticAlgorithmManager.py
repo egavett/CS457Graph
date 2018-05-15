@@ -68,8 +68,8 @@ class Manager:
             1 : "Partially Mapped Crossover",
             2 : "Maximal Preservative Crossover",
             3 : "Alternating Crossover",
-            4 : "Sorted Match Crossover",
-            5 : "Edge Recombination Crossover"
+            4 : "Edge Recombination Crossover",
+            5 : "Sorted Match Crossover"
     }
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
 #geneticEdgeRecombinationCrossover(solutions)
@@ -317,28 +317,6 @@ class Manager:
             generation.extend([Solution(solutionA), Solution(solutionB)])
         return generation
 
-    # Find subtours in each parent that:
-    # a) are the same length
-    # b) start and end at the same cities
-    # c) contain the same cities
-    # Swap these subtours in the parents to create children
-    # There are no guarantees with this crossover, so it is comprehensive in looking for children
-    def sortedMatchCrossover(self, solutions):
-        generation = []
-        for x in range(0, len(solutions), 2):
-            y = x+1
-            parentX, parentY = solutions[x].path, solutions[y].path     # Get the next set of parent
-            for tourLength in range(2, int(len(parentX)/2)):                   # Search all tour lengths from 3-len(parent)/2
-                for v in range(len(parentX)-tourLength):                # Search all possible tours of this length
-                    tourX, tourY = parentX[v:v+tourLength], parentY[v:v+tourLength]                         # Get the subtours
-                    if sorted(tourX) == sorted(tourY) and tourX[0] == tourY[0] and tourX[-1] == tourY[-1]:    # Verify b and c
-                        solutionA, solutionB = list(parentX), list(parentY) # Copy the lists
-
-                        # Swap the subtours
-                        solutionA[v:v+tourLength], solutionB[v:v+tourLength] = solutionB[v:v+tourLength], solutionA[v:v+tourLength]
-                        generation.extend([Solution(solutionA), Solution(solutionB)])
-        return generation
-
     # Create a dictionary that holds every edge in both paths, combine edges to form a child solution
     # Idealy, this creates a solution that uses the edges, not vertices, as traits
     def edgeRecombinationCrossover(self, solutions):
@@ -402,6 +380,59 @@ class Manager:
                 generation.append(Solution(solution))
         return generation
 
+    # Find subtours in each parent that:
+    # a) are the same length
+    # b) start and end at the same cities
+    # c) contain the same cities
+    # Swap these subtours in the parents to create children
+    # There are no guarantees with this crossover, so it is comprehensive in looking for children
+    def sortedMatchCrossover(self, solutions):
+        generation = []
+        for x in range(0, len(solutions), 2):
+            y = x+1
+            parentX, parentY = solutions[x].path, solutions[y].path     # Get the next set of parents
+            for tourLength in range(2, int(len(parentX)/2)):                   # Search all tour lengths from 3-len(parent)/2
+                for v in range(len(parentX)-tourLength):                # Search all possible tours of this length
+                    tourX, tourY = parentX[v:v+tourLength], parentY[v:v+tourLength]                         # Get the subtours
+                    if sorted(tourX) == sorted(tourY) and tourX[0] == tourY[0] and tourX[-1] == tourY[-1]:    # Verify b and c
+                        solutionA, solutionB = list(parentX), list(parentY) # Copy the lists
+
+                        # Swap the subtours
+                        solutionA[v:v+tourLength], solutionB[v:v+tourLength] = solutionB[v:v+tourLength], solutionA[v:v+tourLength]
+                        generation.extend([Solution(solutionA), Solution(solutionB)])
+        return generation
+
+    # # Sorted Match using a more efficient method to find subtours
+    # def sortedMatchCrossover2(self, solutions):
+    # generation = []
+    #     for x in range(0, len(solutions), 2):
+    #         y = x+1
+    #         parentX, parentY = solutions[x].path, solutions[y].path     # Get the next set of parents
+
+    #         # Get two vertices
+    #         for i in range(len(parentX)):
+    #             for j in range(i, len(parentX)):
+    #                 # Get the indices of each vertex in each parent (verifies b)
+    #                 X1, X2 = parentX.index(i), parentX.index(j)
+    #                 Y1, Y2 = parentY.index(i), parentY.index(j)
+
+    #                 # Sort indices as needed
+    #                 if X1 > X2: 
+    #                     X1, X2 = X2, X1
+    #                 if Y1 > Y2: 
+    #                     Y1, Y2 = Y2, Y1
+
+    #                 # Verify a)
+    #                 if abs(X1 - X2) == abs(Y1 - Y2):
+    #                     # Verify c)
+    #                     if sorted(parentX[X1:X2]) == sorted(parentY[Y1:Y2]):
+    #                         solutionA, solutionB = list(parentX), list(parentY) # Copy the lists
+
+    #                         # Swap the subtours
+    #                         solutionA[X1:X2], solutionB[Y1:Y2] = solutionB[Y1:Y2], solutionA[X1:X2]
+    #                         generation.extend([Solution(solutionA), Solution(solutionB)])
+    #return generation
+
     def crossoverSwitch(self, case, solutions):
         # Selects the correct crossover function based on case
         if case == 0:
@@ -413,9 +444,9 @@ class Manager:
         elif case == 3:
             return self.alternatingCrossover(solutions)
         elif case == 4:
-            return self.sortedMatchCrossover(solutions)
-        else:
             return self.edgeRecombinationCrossover(solutions)
+        else:
+            return self.sortedMatchCrossover(solutions)
     
     ## Display Function ##
     # Outputs the final results
