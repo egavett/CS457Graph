@@ -1,27 +1,27 @@
 # GraphGenerator.py
 # Generates a text file that contains a graph that adheres to the given parameters
-
 import random
 
-def generateGraph():
+
+def generate_graph():
     # Input parameters
-    vertexCount = int(input("How many vertices in the graph? "))
-    minWeight = int(input("What should be the minimum edge weight? "))
-    maxWeight = int(input("What should be the maximum edge weight? "))
+    vertex_count = int(input("How many vertices in the graph? "))
+    min_weight = int(input("What should be the minimum edge weight? "))
+    max_weight = int(input("What should be the maximum edge weight? "))
 
     # Create array for graph
-    graph = [[-1 for x in range(vertexCount)] for y in range(vertexCount)]
+    graph = [[-1 for _ in range(vertex_count)] for _ in range(vertex_count)]
 
     # Generate random weights for the graph
-    for row in range(vertexCount):
+    for row in range(vertex_count):
         for column in range(row):
-            weight = random.randint(minWeight, maxWeight)
+            weight = random.randint(min_weight, max_weight)
             graph[row][column] = weight
             graph[column][row] = weight
 
     # Write to file
     fileout = open("generatedGraph.txt", "w")
-    fileout.write(str(vertexCount))
+    fileout.write(str(vertex_count))
     fileout.write('\n')
     for row in graph:
         fileout.write(' '.join(str(x) for x in row))

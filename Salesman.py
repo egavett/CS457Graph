@@ -4,35 +4,37 @@ from GeneticAlgorithmManager import Manager
 from Graph import Graph
 import GraphGenerator
 
+
 # Imports the graph information from a textfile and stores it in a Graph object
 # File format:
-    # Line 1: n, the number of vertices in the graph
-    # Line {2, ... n+1): A n*n matrix of weights. Use -1 for unconnected vertices
-def importGraph(fileName):
+# Line 1: n, the number of vertices in the graph
+# Line {2, ... n+1): A n*n matrix of weights. Use -1 for unconnected vertices
+def import_graph(file_name):
     # Open the file, extract graph data
-    filein = open(fileName)
-    data = filein.read()
-    weights = [ sublist.strip().split() for sublist in data.splitlines() ]
+    filein = open(file_name)
+    lines_in = filein.read()
+    weights = [sublist.strip().split() for sublist in lines_in.splitlines()]
 
     # Get the number of vertices in the graph
-    vertexCount = int(weights[0][0])
+    vertex_count = int(weights[0][0])
     weights.pop(0)
 
     # Create and return a graph object
-    newGraph = Graph(vertexCount, weights)
-    return newGraph
+    new_graph = Graph(vertex_count, weights)
+    return new_graph
 
-def main():
+
+if __name__ == '__main__':
     # Get User Preferences
 
     # Generate new Graph?
     willGenerate = input("Generate a new graph before starting? (No => 0; Yes => 1) ")
 
     if int(willGenerate) == 1:
-        GraphGenerator.generateGraph()
+        GraphGenerator.generate_graph()
 
     # Metric Run?
-    mr = input("Would you like to calculate the metrics for each crossover function, or just see a demonstration? (0 => demonstration; 1 => metrics) ")
+    mr = input("Would you like to calculate the metrics, or see a demonstration? (0 => demonstration; 1 => metrics) ")
     runs = 1
     metricsRun = False
     willWait = False
@@ -51,23 +53,21 @@ def main():
             if int(wait) == 1:
                 willWait = True
 
-
-
     # Import graph data and create the Genetic Algorithm manager
-    citiesGraph = importGraph('generatedGraph.txt')
+    citiesGraph = import_graph('generatedGraph.txt')
     manager = Manager(citiesGraph)
 
     allData = []
     for case in range(manager.crossoverCount):
 
         if metricsRun:
-            # Find and printthe metrics data for the crossover
-            data = manager.runMetrics(case, runs)
+            # Find and print the metrics data for the crossover
+            data = manager.run_metrics(case, runs)
             data.print()
             allData.append(data)
         else:
-        # Run the genetic algorithm for each supported crossover function
-            manager.runAlgorithm(case, willWait, metricsRun, willDisplay)
+            # Run the genetic algorithm for each supported crossover function
+            manager.run_algorithm(case, willWait, metricsRun, willDisplay)
             if willDisplay:
                 input("Press Enter to continue...")
 
@@ -77,6 +77,4 @@ def main():
             data.print()
     else:
         # Display the results of the algorithm
-        manager.finalDisplay()
-
-main()
+        manager.final_display()

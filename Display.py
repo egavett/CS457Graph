@@ -1,15 +1,14 @@
 # Display.py
 # displays graphical data
-import Graph
-import GeneticAlgorithmManager
-
 import sys
 from termcolor import colored
 
+
 # TODO: Replace with GUI
-def displayPath(graph, solution):
-    vertexCount = len(solution.path)
-    highlight = [[False for x in range(vertexCount)] for y in range(vertexCount)]    # 2D-array of booleans, signifies which edges are in the path
+def display_path(graph, solution):
+    vertex_count = len(solution.path)
+    # 2D-array of booleans, signifies which edges are in the path
+    highlight = [[False for _ in range(vertex_count)] for _ in range(vertex_count)]
 
     for i in range(len(solution.path)):
         j = i+1
@@ -22,7 +21,7 @@ def displayPath(graph, solution):
     for row in range(len(graph.weights)):
         sys.stdout.write('| ')
         for column in range(len(graph.weights)):
-        # If the edge is in the path, print green; otherwise print normally
+            # If the edge is in the path, print green; otherwise print normally
             text = str(graph.weights[row][column])
             if highlight[row][column]:
                 text = colored(graph.weights[row][column], 'green')

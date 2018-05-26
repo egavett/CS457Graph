@@ -1,8 +1,6 @@
 # GeneticAlgorithmManager.py
 # Maintains all functions for performing the genetic algorithm
-from Graph import Graph
 import Display
-
 import time
 import os
 import random
@@ -10,6 +8,8 @@ import operator
 import collections
 import math
 import copy
+import statistics
+
 
 # Helper class for storing solution information
 class Solution:
@@ -17,10 +17,11 @@ class Solution:
     def __init__(self, path):
         self.path = path
         self.cost = -1  # set cost to -1 until the solution is evaluated
-        
+
     # For printing
     def __repr__(self):
         return "The path: {" + " ".join(str(e) for e in self.path) + "} costs: " + str(self.cost)
+
     def __str__(self):
         return "The path: {" + " ".join(str(e) for e in self.path) + "} costs: " + str(self.cost)
 
@@ -36,90 +37,86 @@ class Metrics:
         self.generations = []           # Tracks the generation time from each run
         # Mean and median for costs and generations. Calculated at the end
         self.meanCost = -1
-        self.medianCost =  -1
-        self.meanGeneration = -1 
-        self.medianGeneration =  -1
+        self.medianCost = -1
+        self.meanGeneration = -1
+        self.medianGeneration = -1
 
     # Calculates the mean and median values of costs and generations
-    def calculateAverages(self):
-        self.meanCost = sum(self.costs)/len(self.costs) # Calculate mean cost
-        self.meanGeneration = sum(self.generations)/len(self.generations) # Calculate mean generation time
+    def calculate_averages(self):
+        self.meanCost = statistics.mean(self.costs)                 # Calculate mean cost
+        self.meanGeneration = statistics.mean(self.generations)     # Calculate mean generation time
+        self.medianCost = statistics.median(self.costs)             # Calculate median cost
+        self.meanGeneration = statistics.median(self.generations)   # Calculate median generation time
 
-        sortedCosts = list(sorted(self.costs))
-        self.medianCost = sortedCosts[int(len(sortedCosts)/2)]
-
-        sortedGenerations = list(sorted(self.generations))
-        self.medianGeneration = sortedCosts[int(len(sortedGenerations)/2)]
-    
     # Displays the metrics data
     def print(self):
         print("Metrics for " + Manager.crossoverNames[self.case])
         print("Best Path: " + str(self.bestSolution))
-        print("Fastest Runtime : " +  str(self.bestGeneration) + " Generations")
+        print("Fastest Runtime : " + str(self.bestGeneration) + " Generations")
         print("Mean Cost: " + str(self.meanCost))
         print("Median Cost: " + str(self.medianCost))
         print("Mean Runtime: " + str(self.meanGeneration) + " Generations")
         print("Median Runtime: " + str(self.medianGeneration) + " Generations")
 
+
 class Manager:
     firstGenerationSize = 4096                      # the size of the first generation of solutions
     crossoverNames = {                              # For Display purposes: the names of implemented crossover functions
-            0 : "Ordered Crossover",
-            1 : "Partially Mapped Crossover",
-            2 : "Maximal Preservative Crossover",
-            3 : "Alternating Crossover",
-            4 : "Edge Recombination Crossover",
-            5 : "Sorted Match Crossover"
+            0: "Ordered Crossover",
+            1: "Partially Mapped Crossover",
+            2: "Maximal Preservative Crossover",
+            3: "Alternating Crossover",
+            4: "Edge Recombination Crossover",
+            5: "Sorted Match Crossover"
     }
     crossoverCount = len(crossoverNames)            # the number of crossover functions the manager has implemented
-#geneticEdgeRecombinationCrossover(solutions)
-    ## Initialization Functions ##
+
+    # Initialization Functions
     # Create and return the first generation of solutions
-    def generateSolutions(self, firstGenerationSize):
+    def generate_solutions(self, first_generation_size):
         generated = []
-        for _ in range(firstGenerationSize):
+        for _ in range(first_generation_size):
             path = list(self.graph.vertices)         # Create a copy of the vertex list
             random.shuffle(path)                # Shuffle the vertex list: creating a random path through the graph
             generated.append(Solution(path))    # Append to the initial solution set
         return generated
 
     # Resets the first generation of solutions. Used for extended simulations.
-    def resetFirstGeneration(self):
-        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)
+    def reset_first_generation(self):
+        self.firstGeneration = self.generate_solutions(self.firstGenerationSize)
 
     # Initializer
     def __init__(self, graph):
         self.graph = graph
-        self.firstGeneration = self.generateSolutions(self.firstGenerationSize)    # Create and store the inital sample of solutions; start each iteration with the same data set
+        self.firstGeneration = self.generate_solutions(self.firstGenerationSize)    # The initial generation
         self.currentGeneration = []
-        self.bestSolution = self.firstGeneration[0]            # Save the current best generation to determine when to exit
-        self.results = []                                      # Stores the results of each crossover for final display. Format: Tuple(crossoverCase, solution, generationCount)
+        self.bestSolution = self.firstGeneration[0]     # Tracks the best generation for each function
+        self.results = []   # Stores the results of each crossover. T(crossover_case, solution, generation_count)
 
-    ## Evalutation Functions ##
-    # Return the cost of following the given path 
-    def getCost(self, path):
+    # EVALUATION FUNCTIONS
+    # Return the cost of following the given path
+    def get_cost(self, path):
         path = list(path)
         cost = 0
         for i in range(len(path)):
             j = i+1
             if j >= len(path):
                 j = 0
-            v1, v2 = path[i], path[j]   # get the vertices of the given indices
-            cost += self.graph.weights[v1][v2]                    # retrive the weight of the edge - add to cost
+            v1, v2 = path[i], path[j]           # get the vertices of the given indices
+            cost += self.graph.weights[v1][v2]  # Retrieve the weight of the edge - add to cost
         return cost
-    
+
     # Gets the cost for each solution in the generation, then sorts the solutions by cost, ascending
-    def evaluateCurrentGeneration(self):
+    def evaluate_current_generation(self):
         for solution in self.currentGeneration:
             if solution.cost == -1:     # No need to reevaluate a solution
-                solution.cost = self.getCost(solution.path)
-        self.currentGeneration.sort(key = operator.attrgetter('cost'))
+                solution.cost = self.get_cost(solution.path)
+        self.currentGeneration.sort(key=operator.attrgetter('cost'))
 
-
-    ## Mutation Functions ##
+    # MUTATION FUNCTIONS
     # Based on a small probability, mutate the solution by swapping the values two random indices
     # Swapping values guarantees the validity of the random solution
-    def attemptMutation(self, solution):   
+    def attempt_mutation(self, solution):
         chance = 0.001
         if random.random() < chance:
             i, j = random.randrange(len(solution.path)), random.randrange(len(solution.path))
@@ -128,21 +125,21 @@ class Manager:
             solution.path[j] = temp
         return solution
 
-    # Calls attemptMutation on each solution in the generation
-    def mutateGeneration(self):
-        for solution in self.currentGeneration:
-            solution = self.attemptMutation(solution)
+    # Calls attempt_mutation on each solution in the generation
+    def mutate_generation(self):
+        for i in range(len(self.currentGeneration)):
+            self.currentGeneration[i] = self.attempt_mutation(self.currentGeneration[i])
 
-
-    ## Crossover Functions ## 
+    # CROSSOVER FUNCTIONS
     # Takes the length of an array and return two random indices, sorted
     # Used in many of the crossover functions
-    def getRandomIndices(self, length):
-        start, end = 0, 0   # Values to return
-        while start == end: # Ensure that start and end are different values
-            start, end =  random.randrange(length), random.randrange(length) # Get start/end indices for the subarray to maintain
+    def get_random_indices(self, length):
+        start, end = 0, 0       # Values to return
+        while start == end:     # Ensure that start and end are different values
+            # Get start/end indices for the subsection to maintain
+            start, end = random.randrange(length), random.randrange(length)
 
-        if start > end: # Ensure that start <= end
+        if start > end:     # Ensure that start <= end
             temp = start
             start = end
             end = temp
@@ -150,189 +147,191 @@ class Manager:
 
     # Take subsections of each parent - place in children at same indices
     # Iterate over the other parent - insert values not in the subsection
-    def orderedCrossover(self, solutions):
+    def ordered_crossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = solutions[x].path, solutions[y].path   # Get the next set of parents
-            
+            parent_x, parent_y = solutions[x].path, solutions[y].path   # Get the next set of parents
+
             # Execute twice to create 4 children
             for _ in range(2):
                 # Get two random indices from within the array
-                start, end = self.getRandomIndices(len(parentX))
+                start, end = self.get_random_indices(len(parent_x))
 
-                maintainedX, maintainedY = parentX[start:end], parentY[start:end]   # Grab the values to be maintained from the arrays
-                solutionA, solutionB = [], []
+                # Grab the values to be maintained from the arrays
+                maintained_x, maintained_y = parent_x[start:end], parent_y[start:end]
+                solution_a, solution_b = [], []
 
                 i, j = 0, 0
-                while j < len(parentX) and i < len(parentX):
+                while j < len(parent_x) and i < len(parent_x):
                     if j == start:
                         # Place the subsection at the same index
-                        solutionA.extend(maintainedX)
-                        j += len(maintainedX)
-                    
+                        solution_a.extend(maintained_x)
+                        j += len(maintained_x)
+
                     # If the next value is not in the array, place it in the next empty index
-                    if parentY[i] not in maintainedX:
-                        solutionA.append(parentY[i])
+                    if parent_y[i] not in maintained_x:
+                        solution_a.append(parent_y[i])
                         j += 1
                     # Always increment to the next value in the parent
                     i += 1
-                
+
                 i, j = 0, 0
-                while j < len(parentY) and i < len(parentY):
+                while j < len(parent_y) and i < len(parent_y):
                     if j == start:
                         # Place the subsection at the same index
-                        solutionB.extend(maintainedY)
-                        j += len(maintainedY)
-                    
+                        solution_b.extend(maintained_y)
+                        j += len(maintained_y)
+
                     # If the next value is not in the array, place it in the next empty index
-                    if parentX[i] not in maintainedY:
-                        solutionB.append(parentX[i]) 
+                    if parent_x[i] not in maintained_y:
+                        solution_b.append(parent_x[i])
                         j += 1
                     # Always increment to the next value in the parent
                     i += 1
 
                 # Append the children to the next generation
-                generation.extend([Solution(solutionA), Solution(solutionB)])
+                generation.extend([Solution(solution_a), Solution(solution_b)])
         return generation
 
     # Take subsections of each parent - place in children and map to each other
     # Iterate over other parent - if vertex in subsection, place the mapped value instead
-    def partiallyMappedCrossover(self, solutions):
+    def partially_mapped_crossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = solutions[x].path, solutions[y].path   # Get the next set of parents
+            parent_x, parent_y = solutions[x].path, solutions[y].path   # Get the next set of parents
 
             # Execute twice to create 4 children
             for _ in range(2):
                 # Get two random indices from within the array
-                start, end = self.getRandomIndices(len(parentX))
+                start, end = self.get_random_indices(len(parent_x))
 
                 # Grab the values to be maintained from the arrays
-                maintainedX, maintainedY = parentX[start:end], parentY[start:end]  
+                maintained_x, maintained_y = parent_x[start:end], parent_y[start:end]
 
                 # Create two dictionaries to map the values in maintained to each other
-                crosssectionX = collections.defaultdict(int) 
-                crosssectionY = collections.defaultdict(int)
-                for i in range(len(maintainedX)):
-                    crosssectionX[maintainedX[i]] = maintainedY[i]
-                    crosssectionY[maintainedY[i]] = maintainedX[i]
+                cross_section_x = collections.defaultdict(int)
+                cross_section_y = collections.defaultdict(int)
+                for i in range(len(maintained_x)):
+                    cross_section_x[maintained_x[i]] = maintained_y[i]
+                    cross_section_y[maintained_y[i]] = maintained_x[i]
 
-                solutionA, solutionB = [], []
+                solution_a, solution_b = [], []
 
                 # While the value in the parent is in the crosssection, get the mapped value
                 # Then, append the resulting value to the child solution
                 for i in range(0, start):
-                    nextValueA = parentY[i]
-                    while nextValueA in crosssectionX:
-                        nextValueA = crosssectionX[nextValueA]
-                    solutionA.append(nextValueA)
+                    next_value_a = parent_y[i]
+                    while next_value_a in cross_section_x:
+                        next_value_a = cross_section_x[next_value_a]
+                    solution_a.append(next_value_a)
 
-                    nextValueB = parentX[i]
-                    while nextValueB in crosssectionY:
-                        nextValueB = crosssectionY[nextValueB]
-                    solutionB.append(nextValueB)
+                    next_value_b = parent_x[i]
+                    while next_value_b in cross_section_y:
+                        next_value_b = cross_section_y[next_value_b]
+                    solution_b.append(next_value_b)
 
                 # Append the maintained subarrays to the opposite child solution
-                solutionA.extend(maintainedX)
-                solutionB.extend(maintainedY)
+                solution_a.extend(maintained_x)
+                solution_b.extend(maintained_y)
 
                 # Repeat the previous step for the end of the array
-                for i in range(end, len(parentX)):
-                    nextValueA = parentY[i]
-                    while nextValueA in crosssectionX:
-                        nextValueA = crosssectionX[nextValueA]
-                    solutionA.append(nextValueA)
+                for i in range(end, len(parent_x)):
+                    next_value_a = parent_y[i]
+                    while next_value_a in cross_section_x:
+                        next_value_a = cross_section_x[next_value_a]
+                    solution_a.append(next_value_a)
 
-                    nextValueB = parentX[i]
-                    while nextValueB in crosssectionY:
-                        nextValueB = crosssectionY[nextValueB]
-                    solutionB.append(nextValueB)
-                
+                    next_value_b = parent_x[i]
+                    while next_value_b in cross_section_y:
+                        next_value_b = cross_section_y[next_value_b]
+                    solution_b.append(next_value_b)
+
                 # Append the children to the next generation
-                generation.extend([Solution(solutionA), Solution(solutionB)])
+                generation.extend([Solution(solution_a), Solution(solution_b)])
         return generation
 
     # Append a subsection of one parent to the child
     # Iterate through the second parent, append vertices that are not in the child
-    def maximalPreservativeCrossover(self, solutions):
+    def maximal_preservative_crossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
 
             # Execute twice to create 4 children
             for _ in range(2):
-                parentX, parentY = list(solutions[x].path), list(solutions[y].path)   # Get the next set of parents. Copy the path, as we need to make alterations
+                # Get the next set of parents. Copy the path, as we need to make alterations
+                parent_x, parent_y = list(solutions[x].path), list(solutions[y].path)
 
                 # Get two random indices from within the array
-                start, end = self.getRandomIndices(len(parentX))
+                start, end = self.get_random_indices(len(parent_x))
 
                 # Grab the values to be maintained from the arrays
-                maintainedX, maintainedY = parentX[start:end], parentY[start:end]  
+                maintained_x, maintained_y = parent_x[start:end], parent_y[start:end]
 
                 # Removed maintained values from opposite parent
-                for v in maintainedY:
-                    parentX.remove(v)
-                for v in maintainedX:
-                    parentY.remove(v)
+                for v in maintained_y:
+                    parent_x.remove(v)
+                for v in maintained_x:
+                    parent_y.remove(v)
 
-                solutionA, solutionB = [], []
+                solution_a, solution_b = [], []
 
                 # Append the maintained arrays to the children
-                solutionA.extend(maintainedX)
-                solutionB.extend(maintainedY)
+                solution_a.extend(maintained_x)
+                solution_b.extend(maintained_y)
 
                 # Append the remaining values from the opposite parent
-                solutionA.extend(parentY)
-                solutionB.extend(parentX)
+                solution_a.extend(parent_y)
+                solution_b.extend(parent_x)
 
                 # Append the children to the next generation
-                generation.extend([Solution(solutionA), Solution(solutionB)])
+                generation.extend([Solution(solution_a), Solution(solution_b)])
         return generation
 
     # Alternate between each parent, appending the next vertex (if not in child)
     # Unless n is even, this crossover only results in 2 children, so execute once per pair
-    def alternatingCrossover(self, solutions):
+    def alternating_crossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = list(solutions[x].path), list(solutions[y].path)   # Get the next set of parents
+            parent_x, parent_y = list(solutions[x].path), list(solutions[y].path)   # Get the next set of parents
 
-            solutionA, solutionB = [], []
-            
-            for i in range(len(parentX)):
+            solution_a, solution_b = [], []
+
+            for i in range(len(parent_x)):
                 # Alternate between vertices, adding missing ones to the children
-                # Start with parentX
-                if parentX[i] not in solutionA:
-                    solutionA.append(parentX[i])
-                if parentY[i] not in solutionA:
-                    solutionA.append(parentY[i])
-                
-                # Start with parentY
-                if parentY[i] not in solutionB:
-                    solutionB.append(parentY[i])
-                if parentX[i] not in solutionB:
-                    solutionB.append(parentX[i])
-            generation.extend([Solution(solutionA), Solution(solutionB)])
+                # Start with parent_x
+                if parent_x[i] not in solution_a:
+                    solution_a.append(parent_x[i])
+                if parent_y[i] not in solution_a:
+                    solution_a.append(parent_y[i])
+
+                # Start with parent_y
+                if parent_y[i] not in solution_b:
+                    solution_b.append(parent_y[i])
+                if parent_x[i] not in solution_b:
+                    solution_b.append(parent_x[i])
+            generation.extend([Solution(solution_a), Solution(solution_b)])
         return generation
 
     # Create a dictionary that holds every edge in both paths, combine edges to form a child solution
     # Idealy, this creates a solution that uses the edges, not vertices, as traits
-    def edgeRecombinationCrossover(self, solutions):
+    def edge_recombination_crossover(self, solutions):
         generation = []
 
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = solutions[x].path, solutions[y].path
+            parent_x, parent_y = solutions[x].path, solutions[y].path
 
             # Create a dictionary that maps each vertex to the vertices it shares edges with in both parents
             edges = collections.defaultdict(set)
-            for i in range(len(parentX)):
+            for i in range(len(parent_x)):
                 j = i+1
-                if j >= len(parentX):
+                if j >= len(parent_x):
                     j = 0
-                v1, v2, v3, v4 = parentX[i], parentX[j], parentY[i], parentY[j]
+                v1, v2, v3, v4 = parent_x[i], parent_x[j], parent_y[i], parent_y[j]
                 edges[v1].add(v2)
                 edges[v2].add(v1)
                 edges[v3].add(v4)
@@ -340,188 +339,171 @@ class Manager:
 
             for _ in range(4):  # Create 4 children
                 # Copy the map
-                edgesCopy = copy.copy(edges)
-            
-                solution = []
+                edges_copy = copy.copy(edges)
+
+                solution = list()
 
                 # 1) Add a random vertex to the solution
-                solution.append(random.choice(parentX))
+                solution.append(random.choice(parent_x))
                 done = False
-                while not done: #Repeat until every vertex is visited
+                while not done:     # Repeat until every vertex is visited
                     # 2) Remove all instances of the last visted vertex from the dictionary
                     vertex = solution[-1]
-                    for vertices in edgesCopy.values():
+                    for vertices in edges_copy.values():
                         vertices.discard(vertex)
-                
+
                     # 3) If the set of the vertex isn't empty...
-                    if len(edgesCopy[vertex]) > 0:
+                    if len(edges_copy[vertex]) > 0:
                         # 4) Go to an adjacent city that has the fewest number of edges
                         adjacent = []
 
                         # Append vertices and edges in tuple
-                        for v in edgesCopy[vertex]:
-                            adjacent.append((v, edgesCopy[v]))
+                        for v in edges_copy[vertex]:
+                            adjacent.append((v, edges_copy[v]))
 
                         # Sort by length of edges, append the vertex with the fewest
                         adjacent.sort(key=lambda tup: len(tup[1]))
                         solution.append(adjacent[0][0])
                     else:
-                        # 5) If all vertices visited, exit. 
-                        if len(solution) == len(parentX):
+                        # 5) If all vertices visited, exit.
+                        if len(solution) == len(parent_x):
                             done = True
                         else:
-                            #Otherwise, select an unvisited vertex
+                            # Otherwise, select an unvisited vertex
                             repeat = True
                             while repeat:
-                                v = random.choice(parentX)
+                                v = random.choice(parent_x)
                                 if v not in solution:
                                     solution.append(v)
                                     repeat = False
                 generation.append(Solution(solution))
         return generation
 
-    # Find subtours in each parent that:
+    # Find sub-tours in each parent that:
     # a) are the same length
     # b) start and end at the same cities
     # c) contain the same cities
-    # Swap these subtours in the parents to create children
+    # Swap these sub-tours in the parents to create children
+    # These tours are found by comparing the sub-tours created by each pair of vertices
     # There are no guarantees with this crossover, so it is comprehensive in looking for children
-    def sortedMatchCrossover(self, solutions):
+    def sorted_match_crossover(self, solutions):
         generation = []
         for x in range(0, len(solutions), 2):
             y = x+1
-            parentX, parentY = solutions[x].path, solutions[y].path     # Get the next set of parents
-            for tourLength in range(2, int(len(parentX)/2)):                   # Search all tour lengths from 3-len(parent)/2
-                for v in range(len(parentX)-tourLength):                # Search all possible tours of this length
-                    tourX, tourY = parentX[v:v+tourLength], parentY[v:v+tourLength]                         # Get the subtours
-                    if sorted(tourX) == sorted(tourY) and tourX[0] == tourY[0] and tourX[-1] == tourY[-1]:    # Verify b and c
-                        solutionA, solutionB = list(parentX), list(parentY) # Copy the lists
+            parent_x, parent_y = solutions[x].path, solutions[y].path     # Get the next set of parents
 
-                        # Swap the subtours
-                        solutionA[v:v+tourLength], solutionB[v:v+tourLength] = solutionB[v:v+tourLength], solutionA[v:v+tourLength]
-                        generation.extend([Solution(solutionA), Solution(solutionB)])
+            # Get two vertices
+            for i in range(len(parent_x)):
+                for j in range(i, len(parent_x)):
+                    # Get the indices of each vertex in each parent (verifies b)
+                    x1, x2 = parent_x.index(i), parent_x.index(j)
+                    y1, y2 = parent_y.index(i), parent_y.index(j)
+
+                    # Sort indices as needed
+                    if x1 > x2:
+                        x1, x2 = x2, x1
+                    if y1 > y2:
+                        y1, y2 = y2, y1
+
+                    # Verify a)
+                    if abs(x1 - x2) == abs(y1 - y2):
+                        # Verify c)
+                        if sorted(parent_x[x1:x2]) == sorted(parent_y[y1:y2]):
+                            solution_a, solution_b = list(parent_x), list(parent_y)     # Copy the lists
+
+                            # Swap the sub-tours
+                            solution_a[x1:x2], solution_b[y1:y2] = solution_b[y1:y2], solution_a[x1:x2]
+                            generation.extend([Solution(solution_a), Solution(solution_b)])
         return generation
 
-    # # Sorted Match using a more efficient method to find subtours
-    # def sortedMatchCrossover2(self, solutions):
-    # generation = []
-    #     for x in range(0, len(solutions), 2):
-    #         y = x+1
-    #         parentX, parentY = solutions[x].path, solutions[y].path     # Get the next set of parents
-
-    #         # Get two vertices
-    #         for i in range(len(parentX)):
-    #             for j in range(i, len(parentX)):
-    #                 # Get the indices of each vertex in each parent (verifies b)
-    #                 X1, X2 = parentX.index(i), parentX.index(j)
-    #                 Y1, Y2 = parentY.index(i), parentY.index(j)
-
-    #                 # Sort indices as needed
-    #                 if X1 > X2: 
-    #                     X1, X2 = X2, X1
-    #                 if Y1 > Y2: 
-    #                     Y1, Y2 = Y2, Y1
-
-    #                 # Verify a)
-    #                 if abs(X1 - X2) == abs(Y1 - Y2):
-    #                     # Verify c)
-    #                     if sorted(parentX[X1:X2]) == sorted(parentY[Y1:Y2]):
-    #                         solutionA, solutionB = list(parentX), list(parentY) # Copy the lists
-
-    #                         # Swap the subtours
-    #                         solutionA[X1:X2], solutionB[Y1:Y2] = solutionB[Y1:Y2], solutionA[X1:X2]
-    #                         generation.extend([Solution(solutionA), Solution(solutionB)])
-    #return generation
-
-    def crossoverSwitch(self, case, solutions):
-        # Selects the correct crossover function based on case
+    # Selects the correct crossover function based on case
+    def crossover_switch(self, case, solutions):
         if case == 0:
-            return self.orderedCrossover(solutions)
+            return self.ordered_crossover(solutions)
         elif case == 1:
-            return self.partiallyMappedCrossover(solutions)
+            return self.partially_mapped_crossover(solutions)
         elif case == 2:
-            return self.maximalPreservativeCrossover(solutions)
+            return self.maximal_preservative_crossover(solutions)
         elif case == 3:
-            return self.alternatingCrossover(solutions)
+            return self.alternating_crossover(solutions)
         elif case == 4:
-            return self.edgeRecombinationCrossover(solutions)
+            return self.edge_recombination_crossover(solutions)
         else:
-            return self.sortedMatchCrossover(solutions)
-    
-    ## Display Function ##
+            return self.sorted_match_crossover(solutions)
+
+    # DISPLAY FUNCTION
     # Outputs the final results
-    def finalDisplay(self):
+    def final_display(self):
         # Clear the terminal
         os.system('cls' if os.name == 'nt' else 'clear')
 
         # Display each recorded result
         for result in self.results:
             print("Result for Crossover Function: " + self.crossoverNames[result[0]])
-            Display.displayPath(self.graph, result[1])
+            Display.display_path(self.graph, result[1])
             print("Solution found after " + str(result[2]) + " generations")
             print()
 
-
-    ## 'Main' Functions ##
+    # 'MAIN' FUNCTIONS
     # Runs the genetic algorthm using a chosen crossover function
-    def runAlgorithm(self, case, wait, metricsRun, willDisplay):
-        # Helper variables. 
-        maxStaleness = 20   # If the best solution doesn't change for a certain number of generations, then exit
-        stalenessCount = 0  # Counts how many generations the best solution has existed
+    def run_algorithm(self, case, wait, metrics_run, will_display):
+        # Helper variables.
+        max_staleness = 20   # If the best solution doesn't change for a certain number of generations, then exit
+        staleness_count = 0  # Counts how many generations the best solution has existed
         gen = 0             # Tracks the number of generations the algorithm has run for
 
         # Reset the current generation to the intially generated first generation
         self.currentGeneration = list(self.firstGeneration)
         self.bestSolution = self.currentGeneration[0]       # Save the current best generation to determine when to exit
-        keepCount = int(len(self.currentGeneration)/4)      # The number of solutions to keep after each evalutation
+        keep_count = int(len(self.currentGeneration)/4)      # The number of solutions to keep after each evalutation
 
-        while stalenessCount < maxStaleness:            
+        while staleness_count < max_staleness:
             # Get the cost for each solution in the generation
-            self.evaluateCurrentGeneration()
+            self.evaluate_current_generation()
 
             # Evaluate for staleness
             if self.bestSolution.cost == self.currentGeneration[0].cost:
-                stalenessCount += 1
+                staleness_count += 1
             else:
                 # New solution: update helpers
-                stalenessCount = 0
+                staleness_count = 0
                 self.bestSolution = self.currentGeneration[0]
 
             # Display current best in generation
             gen += 1
-            if willDisplay:
+            if will_display:
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print("Testing Crossover Function: " + self.crossoverNames[case])
                 print("Current Generation: " + str(gen))
-                Display.displayPath(self.graph, self.currentGeneration[0])
-                print("Staleness: " + str(stalenessCount))
+                Display.display_path(self.graph, self.currentGeneration[0])
+                print("Staleness: " + str(staleness_count))
                 # Debug: Ensure that solution is valid
                 if sorted(self.bestSolution.path) != self.graph.vertices:
                     print("SOLUTION IS INVALID. CHECK " + self.crossoverNames[case].upper())
 
             # Execute Crossover on best solutions
-            newGeneration = self.currentGeneration[:keepCount]                  # keep the top 25% of the generation
+            newGeneration = self.currentGeneration[:keep_count]                  # keep the top 25% of the generation
             random.shuffle(newGeneration)                                       # shuffle; ensures more genetic variety
-            newGeneration.extend(self.crossoverSwitch(case, newGeneration))     # Crossover select
+            newGeneration.extend(self.crossover_switch(case, newGeneration))     # Crossover select
             self.currentGeneration = newGeneration
 
             # attempt mutation on each solution
-            self.mutateGeneration()
+            self.mutate_generation()
 
             if wait:
                 # Wait before repeating
-                time.sleep(0.20) 
+                time.sleep(0.20)
 
         # For non-metric runs, save the results of the crossover for final display
         # Otherwise, return the values for the metric object
-        # Use (gen-maxStaleness) to get when the bestSolution was generated
-        if not metricsRun:
-            self.results.append((case, self.bestSolution, gen-maxStaleness))
+        # Use (gen-max_staleness) to get when the bestSolution was generated
+        if not metrics_run:
+            self.results.append((case, self.bestSolution, gen-max_staleness))
         else:
-            return (self.bestSolution, gen-maxStaleness)
+            return (self.bestSolution, gen-max_staleness)
 
     # Runs the algorithm for each crossover multiple times to find best and average performance
-    def runMetrics(self, case, runs):
+    def run_metrics(self, case, runs):
         # Create metrics object
         data = Metrics(case)
 
@@ -530,24 +512,24 @@ class Manager:
         # Run the algorithm the specified number of times
         for _ in range(runs):
             # Reset the first generation
-            self.resetFirstGeneration()
+            self.reset_first_generation()
 
             # Run the algorithm
-            solution, time = self.runAlgorithm(case, False, True, False)
-            
+            solution, generations = self.run_algorithm(case, False, True, False)
+
             # Append new data
             data.costs.append(solution.cost)
-            data.generations.append(time)
+            data.generations.append(generations)
 
             # Set new bests
-            if data.bestSolution != None:
+            if data.bestSolution is not None:
                 if solution.cost < data.bestSolution.cost:
                     data.bestSolution = solution
             else:
                 data.bestSolution = solution
-            if time < data.bestGeneration:
-                data.bestGeneration = time
+            if generations < data.bestGeneration:
+                data.bestGeneration = generations
 
         # Calculate averages
-        data.calculateAverages()
+        data.calculate_averages()
         return data
