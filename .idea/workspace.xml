@@ -2,13 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="80fae533-a0e7-4a79-ae1c-9ec07145b239" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Display.py" beforeDir="false" afterPath="$PROJECT_DIR$/Display.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Classes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GeneticAlgorithmManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/GeneticAlgorithmManager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/Graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GraphGenerator.py" beforeDir="false" afterPath="$PROJECT_DIR$/GraphGenerator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Graph.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Salesman.py" beforeDir="false" afterPath="$PROJECT_DIR$/Salesman.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generatedGraph.txt" beforeDir="false" afterPath="$PROJECT_DIR$/generatedGraph.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -19,11 +17,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Salesman.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Salesman.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Salesman.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="441">
-              <caret line="61" lean-forward="true" selection-start-line="61" selection-end-line="61" />
+            <state relative-caret-position="75">
+              <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
               <folding>
                 <element signature="e#53#96#0" expanded="true" />
               </folding>
@@ -51,20 +49,23 @@
       <file leaf-file-name="GeneticAlgorithmManager.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/GeneticAlgorithmManager.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="520">
-              <caret line="402" column="31" lean-forward="true" selection-start-line="402" selection-start-column="31" selection-end-line="402" selection-end-column="31" />
+            <state relative-caret-position="150">
+              <caret line="10" selection-start-line="10" selection-end-line="10" />
               <folding>
-                <element signature="e#92#106#0" expanded="true" />
+                <element signature="e#92#129#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Graph.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Graph.py">
+      <file leaf-file-name="Classes.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Classes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+            <state relative-caret-position="1020">
+              <caret line="68" column="65" lean-forward="true" selection-start-line="68" selection-start-column="65" selection-end-line="68" selection-end-column="65" />
+              <folding>
+                <element signature="e#56#67#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -87,10 +88,11 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Display.py" />
-        <option value="$PROJECT_DIR$/GeneticAlgorithmManager.py" />
-        <option value="$PROJECT_DIR$/Graph.py" />
         <option value="$PROJECT_DIR$/GraphGenerator.py" />
+        <option value="$PROJECT_DIR$/Graph.py" />
         <option value="$PROJECT_DIR$/Salesman.py" />
+        <option value="$PROJECT_DIR$/GeneticAlgorithmManager.py" />
+        <option value="$PROJECT_DIR$/Classes.py" />
       </list>
     </option>
   </component>
@@ -122,7 +124,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -186,7 +188,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24305555" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.0" />
@@ -194,9 +195,9 @@
       <window_info anchor="bottom" id="Find" order="1" weight="0.32900944" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.9304245" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.38207546" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" weight="0.32900944" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.32900944" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -241,7 +242,7 @@
         <state relative-caret-position="5955">
           <caret line="406" column="8" selection-start-line="406" selection-start-column="8" selection-end-line="406" selection-end-column="8" />
           <folding>
-            <element signature="e#92#106#0" expanded="true" />
+            <element signature="e#92#129#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -283,23 +284,6 @@
     <entry file="file://$PROJECT_DIR$/generatedGraph.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/GeneticAlgorithmManager.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="520">
-          <caret line="402" column="31" lean-forward="true" selection-start-line="402" selection-start-column="31" selection-end-line="402" selection-end-column="31" />
-          <folding>
-            <element signature="e#92#106#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Graph.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/GraphGenerator.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="375">
@@ -307,12 +291,39 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Graph.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Salesman.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="441">
-          <caret line="61" lean-forward="true" selection-start-line="61" selection-end-line="61" />
+        <state relative-caret-position="75">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
           <folding>
             <element signature="e#53#96#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GeneticAlgorithmManager.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+          <folding>
+            <element signature="e#92#129#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Classes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1020">
+          <caret line="68" column="65" lean-forward="true" selection-start-line="68" selection-start-column="65" selection-end-line="68" selection-end-column="65" />
+          <folding>
+            <element signature="e#56#67#0" expanded="true" />
           </folding>
         </state>
       </provider>

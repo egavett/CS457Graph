@@ -1,7 +1,7 @@
 # Salesman.py
 # Main Function - manages control flow
 from GeneticAlgorithmManager import Manager
-from Graph import Graph
+from Classes import Graph
 import GraphGenerator
 
 
